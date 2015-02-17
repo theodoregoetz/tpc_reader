@@ -6,12 +6,11 @@ out     = 'build'
 VERSION = '0.0.1'
 APPNAME = 'tpc_reader'
 
-
 def options(ctx):
 
     import os,sys
 
-    ctx.load('compiler_cxx boost')
+    ctx.load('compiler_cxx') # boost
 
     ### CONFIGURE options
     cfg_opts = ctx.exec_dict['opt'].get_option_group('configure options')
