@@ -1,5 +1,5 @@
-#ifndef BSWAP_HPP
-#define BSWAP_HPP
+#ifndef TPC_DETAIL_BSWAP_HPP
+#define TPC_DETAIL_BSWAP_HPP
 
 #ifdef __builtin_bswap32
 
@@ -32,4 +32,4 @@
 
 #endif
 
-#endif // BSWAP_HPP
+#endif // TPC_DETAIL_BSWAP_HPP

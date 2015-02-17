@@ -10,13 +10,11 @@
 #include <vector>
 #include <utility>
 
-#include "bswap.hpp"
+#include "detail/bswap.hpp"
 
 namespace tpc
 {
 
-using std::clog;
-using std::cout;
 using std::cerr;
 using std::endl;
 using std::uint32_t;
@@ -25,7 +23,10 @@ using std::string;
 using std::ifstream;
 using std::exception;
 
-static const size_t frame_size = 68*512*4;
+static const size_t nchannels = 68;
+static const size_t ncells = 512;
+static const size_t nagets = 4;
+static const size_t frame_size = nchannels * ncells * nagets;
 
 class DataFrameHeader
 {

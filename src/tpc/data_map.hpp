@@ -1,20 +1,18 @@
 #ifndef TPC_DATA_MAP_HPP
 #define TPC_DATA_MAP_HPP
 
-#include <iostream>
-using std::cout;
-using std::endl;
-
 #include <istream>
 #include <fstream>
 #include <string>
 #include <map>
 
-#include "tpc_data_frame.hpp"
+#include "data_frame.hpp"
 
 namespace tpc
 {
 
+using std::cerr;
+using std::endl;
 using std::ios;
 using std::istream;
 using std::ifstream;
@@ -59,9 +57,9 @@ bool operator<(const DataFrameElementID& lhs,
 
 struct PadID
 {
+    Side side;
     int ring;
     int id;
-    Side side;
 };
 
 class DataMap

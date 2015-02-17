@@ -5,15 +5,14 @@
 #include <array>
 #include <vector>
 
-#include "tpc_data_frame.hpp"
-#include "tpc_data_map.hpp"
+#include "data_frame.hpp"
+#include "data_map.hpp"
 
 namespace tpc
 {
 
 using std::array;
 using std::vector;
-
 using std::exception;
 using std::cerr;
 using std::endl;
@@ -122,6 +121,11 @@ class Data
     ScalarData adc(Side side, size_t ring, size_t pad)
     {
         return _adc[side][ring][pad];
+    }
+
+    ScalarData tdc(Side side, size_t ring, size_t pad)
+    {
+        return _tdc[side][ring][pad];
     }
 };
 

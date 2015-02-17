@@ -1,0 +1,9 @@
+# encoding: utf-8
+
+def build(ctx):
+
+    ctx.program(
+        target = 'tpc-readraw',
+        source = ['tpc-readraw.cpp'],
+        includes = ['#src'],
+        use = 'C++11')

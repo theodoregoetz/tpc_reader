@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-#include "tpc_data.hpp"
+#include "tpc/data.hpp"
 
 using namespace std;
 
