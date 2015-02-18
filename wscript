@@ -122,20 +122,30 @@ def configure(ctx):
 
     ### MANDATORY DEPENDENCIES
 
+    cxx11_code = '#include <array>\nint main() {}\n'
+
     try:
-        cxx11_code = '#include <array>\nint main() {}\n'
 
         cxx11env = ctx.env.derive()
-        ctx.parse_flags('-std=c++11', 'C++11', env=cxx11env)
-        ctx.check_cxx(fragment=cxx11_code, env=cxx11env, use='C++11', msg='C++11 support')
+        ctx.parse_flags('-std=c++11', 'C++11',
+            env=cxx11env)
+        ctx.check_cxx(fragment=cxx11_code, env=cxx11env,
+            use='C++11', msg='C++11 support')
         ctx.parse_flags('-std=c++11', 'C++11')
 
     except ctx.errors.ConfigurationError:
 
         cxx11env = ctx.env.derive()
-        ctx.parse_flags('-std=c++0x', 'C++11', env=cxx11env)
-        ctx.check_cxx(fragment=cxx11_code, env=cxx11env, use='C++11', msg='C++0x support')
+        ctx.parse_flags('-std=c++0x', 'C++11',
+            env=cxx11env)
+        ctx.check_cxx(fragment=cxx11_code, env=cxx11env,
+            use='C++11', msg='C++0x support')
         ctx.parse_flags('-std=c++0x', 'C++11')
+
+    ctx.env.CXXFLAGS += ['-Ofast']
+
+    if ctx.options.debug:
+        ctx.env.CXXFLAGS += ['-g','-DDEBUG']
 
     """
     ctx.load('boost')

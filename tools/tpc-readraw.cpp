@@ -12,13 +12,18 @@ int main(int argc, char** argv)
     string infile = argv[2];
 
     ifstream fin(infile);
+    if (!fin.good())
+    {
+        cerr << "Could not open file: " << infile << endl;
+        return 1;
+    }
     tpc::Data tpc_data;
     tpc_data.load_map(mapfile);
 
     int count = 0;
     while (tpc_data.read(fin))
     {
-        for (auto x : tpc_data.adc(tpc::Side::LEFT,2,20))
+        for (auto x : tpc_data.adc(2,20))
         {
             cout << ", " << x;
         }

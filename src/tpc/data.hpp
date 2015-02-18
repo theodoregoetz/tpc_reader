@@ -7,22 +7,26 @@
 
 #include "data_frame.hpp"
 #include "data_map.hpp"
+#include "detail/log.hpp"
 
 namespace tpc
 {
 
+using std::istream;
 using std::array;
 using std::vector;
 using std::exception;
 using std::cerr;
+using std::clog;
 using std::endl;
 
-static const size_t nrings = 31;
+static const size_t nrings = 32;
 static const array<size_t,nrings> npads{
-    128,128,128,128,128,128,128,128,128,128,
-    128,128,128,128,128,128,128,128,128,128,
-    128,128,128,128,128,128,128,128,128,128,
-    128, };
+     48,  48,  72,  96, 120, 144, 168, 192, 216, 240,
+    208, 218, 230, 214, 212, 214, 220, 224, 232, 238,
+    244, 232, 218, 210, 206, 202, 200, 196, 178, 130,
+    108,  90 };
+static const size_t nsamples = 512;
 
 class Data
 {
@@ -31,42 +35,35 @@ class Data
     DataFrame _frame;
     DataMap _map;
 
-    typedef vector<int> ScalarData;
-    typedef vector<ScalarData> ScalarDataRing;
-    typedef vector<ScalarDataRing> ScalarDataSide;
+    typedef array<int,nsamples> ScalarDataPad;
+    typedef vector<ScalarDataPad> ScalarDataRing;
+    typedef vector<ScalarDataRing> ScalarData;
 
-    map<Side,ScalarDataSide> _adc;
-    map<Side,ScalarDataSide> _tdc;
+    ScalarData _adc;
+    ScalarData _tdc;
 
     static
-    void _clear_scalar_data(map<Side,ScalarDataSide>& data_map)
+    void _clear_scalar_data(ScalarData& data)
     {
-        for (auto side : {Side::LEFT,Side::RIGHT})
+        for (auto& v : data)
         {
-            for (auto& vv : data_map[side])
+            for (auto& vv : v)
             {
-                for (auto& v : vv)
+                for (auto& vvv: vv)
                 {
-                    v.clear();
+                    vv.fill(0);
                 }
             }
         }
     }
 
     static
-    void _setup_scalar_data(map<Side,ScalarDataSide>& data_map)
+    void _setup_scalar_data(ScalarData& data)
     {
-        data_map[Side::LEFT ] = ScalarDataSide(nrings);
-        data_map[Side::RIGHT] = ScalarDataSide(nrings);
-
-        for (auto side : {Side::LEFT,Side::RIGHT})
+        data.resize(nrings);
+        for (int r = 0; r < nrings; r++)
         {
-            data_map[side] = ScalarDataSide(nrings);
-
-            for (int r = 0; r < nrings; r++)
-            {
-                data_map[side][r].resize(npads[r]);
-            }
+            data[r].resize(npads[r]);
         }
     }
 
@@ -88,26 +85,34 @@ class Data
         Data::_clear_scalar_data(_tdc);
     }
 
-    bool read(ifstream& fin)
+    bool read(istream& is)
     {
         try
         {
-            if (_frame.read(fin))
+            PadID pad;
+            DBG( clog << "Reading Frames:   0 / 512"; )
+            DBG( clog.flush();                        )
+            for (int i = 0; i < nsamples; i++)
             {
-                this->clear();
-
-                PadID pad;
-                for (const auto& elem : _frame)
+                if (_frame.read(is))
                 {
-                    pad = _map.pad_id(elem.id);
-                    _adc[pad.side][pad.ring][pad.id].push_back(elem.val);
+                    for (const auto& elem : _frame)
+                    {
+                        pad = _map.pad_id(elem.id);
+                        _adc[pad.ring][pad.id][i] = elem.val;
+                    }
                 }
-                return true;
+                else
+                {
+                    return false;
+                }
+                DBG( clog << "\rReading Frames: "; )
+                DBG( clog.width(3);                )
+                DBG( clog << i+1 << " / 512";      )
+                DBG( clog.flush();                 )
             }
-            else
-            {
-                return false;
-            }
+            DBG( clog << endl; )
+            return true;
         }
         catch (exception& e)
         {
@@ -118,14 +123,14 @@ class Data
         return false;
     }
 
-    ScalarData adc(Side side, size_t ring, size_t pad)
+    ScalarDataPad adc(size_t ring, size_t pad)
     {
-        return _adc[side][ring][pad];
+        return _adc[ring][pad];
     }
 
-    ScalarData tdc(Side side, size_t ring, size_t pad)
+    ScalarDataPad tdc(size_t ring, size_t pad)
     {
-        return _tdc[side][ring][pad];
+        return _tdc[ring][pad];
     }
 };
 

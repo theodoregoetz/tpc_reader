@@ -7,3 +7,9 @@ def build(ctx):
         source = ['tpc-readraw.cpp'],
         includes = ['#src'],
         use = 'C++11')
+
+    ctx.program(
+        target = 'tpc-readraw-timing',
+        source = ['tpc-readraw-timing.cpp'],
+        includes = ['#src'],
+        use = 'C++11')

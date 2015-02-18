@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
-#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -20,7 +19,7 @@ using std::endl;
 using std::uint32_t;
 using std::array;
 using std::string;
-using std::ifstream;
+using std::istream;
 using std::exception;
 
 static const size_t nchannels = 68;
@@ -36,9 +35,9 @@ class DataFrameHeader
 
   public:
     DataFrameHeader() {}
-    void read(ifstream& fin)
+    void read(istream& is)
     {
-        fin.read((char*) _buffer.data(), _size * sizeof(uint32_t));
+        is.read((char*) _buffer.data(), _size * sizeof(uint32_t));
     }
     int nevent()
     {
@@ -59,17 +58,17 @@ class DataFrameBuffer : public array<uint32_t,frame_size>
   public:
     int nevent;
     int last_cell;
-    bool read(ifstream& fin)
+    bool read(istream& is)
     {
         try
         {
-            if (fin.good() && ! fin.eof())
+            if (is.good() && ! is.eof())
             {
-                _header.read(fin);
+                _header.read(is);
                 this->nevent = _header.nevent();
                 this->last_cell = _header.last_cell();
 
-                fin.read((char*) this->data(), frame_size * sizeof(uint32_t));
+                is.read((char*) this->data(), frame_size * sizeof(uint32_t));
                 for (auto& x : *this)
                 {
                     x = bswap32(x);
@@ -94,9 +93,9 @@ class DataFrameBuffer : public array<uint32_t,frame_size>
 
 struct DataFrameElementID
 {
+    int aget;
     int channel;
     int cell;
-    int aget;
 };
 
 struct DataFrameElement
@@ -111,18 +110,18 @@ class DataFrame : public array<DataFrameElement,frame_size>
     DataFrameBuffer _buffer;
 
   public:
-    bool read(ifstream& fin)
+    bool read(istream& is)
     {
         try
         {
-            if (_buffer.read(fin))
+            if (_buffer.read(is))
             {
                 auto elem = this->begin();
-                for (const auto x : _buffer)
+                for (const auto& x : _buffer)
                 {
-                    elem->id.channel = (x >> 23 & 0x7f) + 1;
-                    elem->id.cell    = (x >> 14 & 0x1ff) + 1;
-                    elem->id.aget    = (x >> 30 & 0x3) + 1;
+                    elem->id.aget    = x >> 30 & 0x3;
+                    elem->id.channel = x >> 23 & 0x7f;
+                    elem->id.cell    = x >> 14 & 0x1ff;
                     elem->val        = x & 0xfff;
                     ++elem;
                 }

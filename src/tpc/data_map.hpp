@@ -19,33 +19,16 @@ using std::ifstream;
 using std::string;
 using std::map;
 
-enum class Side {LEFT, RIGHT};
-
-inline
-istream& operator>>(istream& is, Side& s)
-{
-    unsigned int side = 0;
-    if (is >> side)
-    {
-        if (side > 1)
-        {
-            is.setstate(is.rdstate() | ios::failbit);
-        }
-        s = static_cast<Side>(side);
-    }
-    return is;
-}
-
 inline
 bool operator<(const DataFrameElementID& lhs,
                const DataFrameElementID& rhs)
 {
-    if ((lhs.channel <  rhs.channel)   ||
-        (lhs.channel == rhs.channel  &&
-         lhs.cell    <  rhs.cell   )   ||
-        (lhs.channel == rhs.channel  &&
-         lhs.cell    == rhs.cell     &&
-         lhs.aget    <  rhs.aget   ))
+    if ((lhs.aget     <  rhs.aget   )   ||
+        (lhs.aget    == rhs.aget      &&
+         lhs.channel  <  rhs.channel)   ||
+        (lhs.aget    == rhs.aget      &&
+         lhs.channel == rhs.channel   &&
+         lhs.cell     <  rhs.cell   ))
     {
         return true;
     }
@@ -57,7 +40,6 @@ bool operator<(const DataFrameElementID& lhs,
 
 struct PadID
 {
-    Side side;
     int ring;
     int id;
 };
@@ -77,9 +59,8 @@ class DataMap
             ifstream fin(filename);
             DataFrameElementID key;
             PadID val;
-            int c=0;
-            while (fin >> key.channel >> key.cell >> key.aget
-                       >> val.side >> val.ring >> val.id)
+            while (fin >> key.aget >> key.channel >> key.cell
+                       >> val.ring >> val.id)
             {
                 _map[key] = val;
             }
