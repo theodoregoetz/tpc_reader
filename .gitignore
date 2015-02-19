@@ -1,6 +1,7 @@
 .lock*
 .waf*
 build
+*.graw
 
 # Compiled Object files
 *.slo

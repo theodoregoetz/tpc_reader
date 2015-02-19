@@ -40,7 +40,6 @@ class Data
     typedef vector<ScalarDataRing> ScalarData;
 
     ScalarData _adc;
-    ScalarData _tdc;
 
     static
     void _clear_scalar_data(ScalarData& data)
@@ -51,7 +50,7 @@ class Data
             {
                 for (auto& vvv: vv)
                 {
-                    vv.fill(0);
+                    vvv.fill(0);
                 }
             }
         }
@@ -71,7 +70,6 @@ class Data
     Data()
     {
         Data::_setup_scalar_data(_adc);
-        Data::_setup_scalar_data(_tdc);
     }
 
     void load_map(const string& filename)
@@ -82,17 +80,16 @@ class Data
     void clear()
     {
         Data::_clear_scalar_data(_adc);
-        Data::_clear_scalar_data(_tdc);
     }
 
-    bool read(istream& is)
+    bool read(istream& is, size_t nframes = nsamples)
     {
         try
         {
             PadID pad;
-            DBG( clog << "Reading Frames:   0 / 512"; )
-            DBG( clog.flush();                        )
-            for (int i = 0; i < nsamples; i++)
+            DBG( clog << "Reading Frames:   0 / " << nframes; )
+            DBG( clog.flush();                                )
+            for (int i = 0; i < nframes; i++)
             {
                 if (_frame.read(is))
                 {
@@ -106,10 +103,10 @@ class Data
                 {
                     return false;
                 }
-                DBG( clog << "\rReading Frames: "; )
-                DBG( clog.width(3);                )
-                DBG( clog << i+1 << " / 512";      )
-                DBG( clog.flush();                 )
+                DBG( clog << "\rReading Frames: ";    )
+                DBG( clog.width(3);                   )
+                DBG( clog << i+1 << " / " << nframes; )
+                DBG( clog.flush();                    )
             }
             DBG( clog << endl; )
             return true;
@@ -126,11 +123,6 @@ class Data
     ScalarDataPad adc(size_t ring, size_t pad)
     {
         return _adc[ring][pad];
-    }
-
-    ScalarDataPad tdc(size_t ring, size_t pad)
-    {
-        return _tdc[ring][pad];
     }
 };
 
