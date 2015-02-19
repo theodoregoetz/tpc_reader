@@ -4,6 +4,8 @@
 #include <string>
 
 #include "TROOT.h"
+#include "TApplication.h"
+#include "TCanvas.h"
 #include "TH2.h"
 
 #include "tpc/data.hpp"
@@ -12,6 +14,7 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
+
     string mapfile = argv[1];
     string infile = argv[2];
 
@@ -24,23 +27,34 @@ int main(int argc, char** argv)
     tpc::Data tpc_data;
     tpc_data.load_map(mapfile);
 
-    size_t npads_max = max_element(tpc::npads.begin(),tpc::npads.end());
+    size_t npads_max = *max_element(tpc::npads.begin(),tpc::npads.end());
+
+    TApplication theApp("theApp", &argc, argv);
+    TCanvas can("can");
+
     TH2I hist("hist","hist",
-        nrings,    -0.5, float(nrings)    - 0.5,
-        npads_max, -0.5, float(npads_max) - 0.5);
-    hist.Draw();
+        tpc::nrings, -0.5, float(tpc::nrings) - 0.5,
+        npads_max,   -0.5, float(npads_max)   - 0.5);
+    hist.Draw("colz");
 
     clog << "Hit enter to continue to next frame.\n";
     while (tpc_data.read(fin, 1))
     {
-        for (size_t ring=0; ring<tpc:nrings; ring++)
+        for (size_t ring=0; ring<tpc::nrings; ring++)
         {
             for (size_t pad=0; pad<tpc::npads[ring]; pad++)
             {
-                hist.SetBinContent(ring,pad,tpc_data.adc(ring,pad));
+                hist.SetBinContent(ring,pad,tpc_data.adc(ring,pad)[0]);
             }
         }
-        hist.Update();
-        cin.ignore();
+        clog << "New event.\n";
+
+        can.Update();
+        can.WaitPrimitive();
+
+        tpc_data.clear();
+        //cin.ignore();
     }
+
+    theApp.Run(true);
 }

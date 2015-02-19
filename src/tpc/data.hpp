@@ -48,10 +48,7 @@ class Data
         {
             for (auto& vv : v)
             {
-                for (auto& vvv: vv)
-                {
-                    vvv.fill(0);
-                }
+                vv.fill(0);
             }
         }
     }

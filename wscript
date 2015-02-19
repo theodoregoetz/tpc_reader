@@ -1,6 +1,8 @@
 #! /usr/bin/env python2
 # encoding: utf-8
 
+from distutils.spawn import find_executable as which
+
 top     = '.'
 out     = 'build'
 VERSION = '0.0.1'
@@ -146,6 +148,12 @@ def configure(ctx):
 
     if ctx.options.debug:
         ctx.env.CXXFLAGS += ['-g','-DDEBUG']
+
+    ctx.check_cfg(
+        uselib_store = 'ROOT',
+        path         = 'root-config',
+        args         = ['--cflags', '--glibs'],
+        package      = '' )
 
     """
     ctx.load('boost')

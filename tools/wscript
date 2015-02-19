@@ -13,3 +13,9 @@ def build(ctx):
         source = ['tpc-readraw-timing.cpp'],
         includes = ['#src'],
         use = 'C++11')
+
+    ctx.program(
+        target = 'tpc-readraw-framedisplay',
+        source = ['tpc-readraw-framedisplay.cpp'],
+        includes = ['#src'],
+        use = 'C++11 ROOT')
