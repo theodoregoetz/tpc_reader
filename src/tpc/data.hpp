@@ -26,7 +26,7 @@ static const array<size_t,nrings> npads{
     208, 218, 230, 214, 212, 214, 220, 224, 232, 238,
     244, 232, 218, 210, 206, 202, 200, 196, 178, 130,
     108,  90 };
-static const size_t nsamples = 512;
+static const size_t nsamples = ncells;
 
 class Data
 {
@@ -84,8 +84,6 @@ class Data
         try
         {
             PadID pad;
-            DBG( clog << "Reading Frames:   0 / " << nframes; )
-            DBG( clog.flush();                                )
             for (int i = 0; i < nframes; i++)
             {
                 if (_frame.read(is))
@@ -93,19 +91,14 @@ class Data
                     for (const auto& elem : _frame)
                     {
                         pad = _map.pad_id(elem.id);
-                        _adc[pad.ring][pad.id][i] = elem.val;
+                        _adc[pad.ring][pad.id][elem.cell] = elem.val;
                     }
                 }
                 else
                 {
                     return false;
                 }
-                DBG( clog << "\rReading Frames: ";    )
-                DBG( clog.width(3);                   )
-                DBG( clog << i+1 << " / " << nframes; )
-                DBG( clog.flush();                    )
             }
-            DBG( clog << endl; )
             return true;
         }
         catch (exception& e)

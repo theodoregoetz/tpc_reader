@@ -23,11 +23,11 @@ int main(int argc, char** argv)
     int count = 0;
     while (tpc_data.read(fin))
     {
-        for (auto x : tpc_data.adc(2,20))
+        for (auto x : tpc_data.adc(22,193))
         {
-            cout << ", " << x;
+            cout << " " << x;
         }
         cout << endl;
-        if (count++ > 10) { break; }
+        cin.ignore();
     }
 }

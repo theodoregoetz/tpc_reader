@@ -53,7 +53,6 @@ int main(int argc, char** argv)
         can.WaitPrimitive();
 
         tpc_data.clear();
-        //cin.ignore();
     }
 
     theApp.Run(true);

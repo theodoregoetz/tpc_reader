@@ -23,12 +23,12 @@ inline
 bool operator<(const DataFrameElementID& lhs,
                const DataFrameElementID& rhs)
 {
-    if ((lhs.aget     <  rhs.aget   )   ||
-        (lhs.aget    == rhs.aget      &&
-         lhs.channel  <  rhs.channel)   ||
-        (lhs.aget    == rhs.aget      &&
-         lhs.channel == rhs.channel   &&
-         lhs.cell     <  rhs.cell   ))
+    if ((lhs.asad     < rhs.asad   )  ||
+        (lhs.asad    == rhs.asad    &&
+         lhs.aget     < rhs.aget   )  ||
+        (lhs.asad    == rhs.asad    &&
+         lhs.aget    == rhs.aget    &&
+         lhs.channel  < rhs.channel))
     {
         return true;
     }
@@ -59,7 +59,7 @@ class DataMap
             ifstream fin(filename);
             DataFrameElementID key;
             PadID val;
-            while (fin >> key.aget >> key.channel >> key.cell
+            while (fin >> key.aget >> key.asad >> key.channel
                        >> val.ring >> val.id)
             {
                 _map[key] = val;

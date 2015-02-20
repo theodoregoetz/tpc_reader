@@ -2,9 +2,9 @@
 
 import itertools as it
 
-channels = range(68)
-cells = range(512)
 agets = range(4)
+asads = range(31)
+channels = range(68)
 
 rings = range(32)
 
@@ -20,7 +20,7 @@ for ring in rings:
         pad_ids += [(ring,pad)]
 
 
-raw_ids = it.product(agets,channels,cells)
+raw_ids = it.product(agets,asads,channels)
 
 for raw,pad in it.izip(raw_ids,pad_ids):
     print raw[0],raw[1],raw[2],pad[0],pad[1]
