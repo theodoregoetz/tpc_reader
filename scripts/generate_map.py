@@ -22,5 +22,6 @@ for ring in rings:
 
 raw_ids = it.product(agets,asads,channels)
 
+
 for raw,pad in it.izip(raw_ids,pad_ids):
     print raw[0],raw[1],raw[2],pad[0],pad[1]

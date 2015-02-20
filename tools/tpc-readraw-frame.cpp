@@ -29,24 +29,33 @@ int main(int argc, char** argv)
         const tpc::DataFrameHeader& hd = fr.header();
 
         cout << "meta type: " << hd.meta_type() << endl;
-        cout << "    frame size: " << hd.frame_size() << endl;
-        cout << "    frame size: " << hd.frame_size() / sizeof(uint32_t) << endl;
+        cout << "    frame size (bytes): " << hd.frame_size() << endl;
+        cout << "    frame size (words): " << hd.frame_size() / sizeof(uint32_t) << endl;
         cout << "    header size: " << hd.header_size() << endl;
         cout << "    event index: " << hd.event_index() << endl;
+        cout << "    read offset: " << hd.read_offset() << endl;
         cout << "    asad: " << hd.asad_index() << endl;
+        cout << "    last cell(aget=0,1,2,3):"
+             << " " << hd.last_cell(0)
+             << " " << hd.last_cell(1)
+             << " " << hd.last_cell(2)
+             << " " << hd.last_cell(3)
+             << endl;
+        cout << "    actual frame size: " << fr.size() << endl;
+        cout << "    actual buffer size: " << fr.buffer().size() << endl;
 
-        cout << "        ring pad asad aget channel cell val word\n";
-        for (auto i : {300,301,302,303,304,305})
+        cout << "        ring pad aget channel cell val word\n";
+        int fsize = fr.size();
+        for (auto i : {300,301,302,303,304,305,fsize-4,fsize-3,fsize-2,fsize-1})
         {
             const auto& elem = fr[i];
-            cout << "       "
-                << " " << mp.pad_id(elem.id).ring
-                << " " << mp.pad_id(elem.id).id
-                << " " << elem.id.asad
-                << " " << elem.id.aget
-                << " " << elem.id.channel
-                << " " << elem.cell
-                << " " << elem.val;
+            cout << "       ";
+            cout.width(5); cout << mp.pad_id(elem.id).ring;
+            cout.width(5); cout << mp.pad_id(elem.id).id;
+            cout.width(5); cout << elem.id.aget;
+            cout.width(5); cout << elem.id.channel;
+            cout.width(5); cout << elem.cell;
+            cout.width(5); cout << elem.val;
             cout << hex
                 << " " << fr.buffer()[i];
             cout << dec

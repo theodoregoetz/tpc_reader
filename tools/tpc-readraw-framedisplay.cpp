@@ -38,22 +38,21 @@ int main(int argc, char** argv)
     hist.Draw("colz");
 
     clog << "Hit enter to continue to next frame.\n";
-    while (tpc_data.read(fin, 1))
+    while (tpc_data.read(fin))
     {
-        for (size_t ring=0; ring<tpc::nrings; ring++)
+        for (int cell = 0; cell < tpc::ncells; cell++)
         {
-            for (size_t pad=0; pad<tpc::npads[ring]; pad++)
+            for (size_t ring=0; ring<tpc::nrings; ring++)
             {
-                hist.SetBinContent(ring,pad,tpc_data.adc(ring,pad)[0]);
+                for (size_t pad=0; pad<tpc::npads[ring]; pad++)
+                {
+                    hist.SetBinContent(ring,pad,tpc_data.adc(ring,pad)[cell]);
+                }
             }
+            can.Update();
+            can.WaitPrimitive();
         }
-        clog << "New event.\n";
-
-        can.Update();
-        can.WaitPrimitive();
-
         tpc_data.clear();
     }
-
     theApp.Run(true);
 }

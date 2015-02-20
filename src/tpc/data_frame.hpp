@@ -26,9 +26,10 @@ using std::exception;
 static const size_t nagets = 4;
 static const size_t nasads = 31;
 static const size_t nchannels = 68;
-static const size_t ncells = 512;
 
 static const size_t frame_length = nagets * nasads * nchannels;
+
+static const size_t ncells = 512;
 
 static const size_t block_size = 64; // 1 block = 64 bytes
 static const size_t frame_header_size = 2 * block_size; // bytes
@@ -75,14 +76,21 @@ class DataFrameHeader
         return Word{_data[25],_data[24],_data[23],_data[22]}.i;
     }
 
-    int last_cell() const
+    int read_offset() const
     {
-        return Word{_data[87],_data[86],0,0}.i;
+        return Word{_data[29],_data[28],0,0}.i;
     }
 
     int asad_index() const
     {
         return Word{_data[27],0,0,0}.i;
+    }
+
+    int last_cell(int aget) const
+    {
+        char i0 = 79 + aget * 2;
+        char i1 = 80 + aget * 2;
+        return Word{i1,i0,0,0}.i;
     }
 };
 
@@ -107,16 +115,6 @@ class DataFrameBuffer : public vector<uint32_t>
                 {
                     x = bswap32(x);
                 }
-                /*
-                long int remaining_words = _header.frame_size()
-                    - _header.header_size()
-                    - frame_size * sizeof(uint32_t);
-                remaining_words /= sizeof(uint32_t);
-                if (remaining_words > 0)
-                {
-                    is.seekg(is.tellg() + remaining_words);
-                }
-                */
                 return true;
             }
             else

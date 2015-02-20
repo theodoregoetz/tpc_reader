@@ -79,25 +79,24 @@ class Data
         Data::_clear_scalar_data(_adc);
     }
 
-    bool read(istream& is, size_t nframes = nsamples)
+    bool read(istream& is)
     {
         try
         {
-            PadID pad;
-            for (int i = 0; i < nframes; i++)
+            // currently reading in only one frame.
+            // This is only a single asad. Should
+            // read in 31 frames for a complete event
+            if (_frame.read(is))
             {
-                if (_frame.read(is))
+                for (const auto& elem : _frame)
                 {
-                    for (const auto& elem : _frame)
-                    {
-                        pad = _map.pad_id(elem.id);
-                        _adc[pad.ring][pad.id][elem.cell] = elem.val;
-                    }
+                    const PadID& pad = _map.pad_id(elem.id);
+                    _adc[pad.ring][pad.id][elem.cell] = elem.val;
                 }
-                else
-                {
-                    return false;
-                }
+            }
+            else
+            {
+                return false;
             }
             return true;
         }

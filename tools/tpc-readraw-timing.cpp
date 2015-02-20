@@ -30,11 +30,15 @@ int main(int argc, char** argv)
     int count = 10;
     while (count-->0)
     {
+        int asad = tpc::nasads;
         auto start = hrclock::now();
-        tpc_data.read(fin);
+        while (asad-->0)
+        {
+            tpc_data.read(fin);
+        }
         auto end = hrclock::now();
         auto elapsed_sec = to_seconds(end - start);
-        cout << "Time to read 512 data frames: "
+        cout << "Time to read " << tpc::nasads << " data frames: "
              << elapsed_sec << " seconds\n";
         elapsed_times.push_back(elapsed_sec);
     }
