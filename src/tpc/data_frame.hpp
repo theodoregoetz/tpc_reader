@@ -34,6 +34,15 @@ class DataFrameHeader
         array<char,4> c;
         uint32_t      i;
     };
+    int _get(size_t start, size_t size) const
+    {
+        Word w{0,0,0,0};
+        for (size_t i=0; i<size; i++)
+        {
+            w.c[i] = _data[start+size-i-1];
+        }
+        return w.i;
+    }
 
   public:
     DataFrameHeader() {}
@@ -46,41 +55,39 @@ class DataFrameHeader
     // meta_type always = 6
     int meta_type() const
     {
-        return bswap32(Word{0,0,0,_data[0]}.i);
+        return _get(0,1);
     }
 
     // whole frame in bytes
     int frame_size() const
     {
-        return bswap32(Word{0,_data[1],_data[2],_data[3]}.i) * block_size;
+        return _get(1,3) * block_size;
     }
 
     // header in bytes
     int header_size() const
     {
-        return bswap32(Word{0,0,_data[8],_data[9]}.i) * block_size;
+        return _get(8,2) * block_size;
     }
 
     int event_index() const
     {
-        return bswap32(Word{_data[22],_data[23],_data[24],_data[25]}.i);
+        return _get(22,4);
     }
 
     int read_offset() const
     {
-        return bswap32(Word{0,0,_data[28],_data[29]}.i);
+        return _get(28,2);
     }
 
     int asad_index() const
     {
-        return bswap32(Word{0,0,0,_data[27]}.i);
+        return _get(27,1);
     }
 
     int last_cell(int aget) const
     {
-        char i0 = 79 + aget * 2;
-        char i1 = 80 + aget * 2;
-        return bswap32(Word{0,0,i0,i1}.i);
+        return _get(79 + 2 * aget, 2);
     }
 };
 
@@ -88,6 +95,13 @@ class DataFrameBuffer : public vector<uint32_t>
 {
   private:
     DataFrameHeader _header;
+    void _bswap()
+    {
+        for (auto& x : *this)
+        {
+            x = bswap32(x);
+        }
+    }
 
   public:
     bool read(istream& is)
@@ -101,10 +115,7 @@ class DataFrameBuffer : public vector<uint32_t>
                 size_t frame_data_words = frame_data_size / sizeof(uint32_t);
                 this->resize(frame_data_words);
                 is.read((char*)this->data(), frame_data_size);
-                for (auto& x : *this)
-                {
-                    x = bswap32(x);
-                }
+                _bswap();
                 return true;
             }
             else
