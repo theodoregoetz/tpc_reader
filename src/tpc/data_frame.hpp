@@ -46,41 +46,41 @@ class DataFrameHeader
     // meta_type always = 6
     int meta_type() const
     {
-        return Word{_data[0],0,0,0}.i;
+        return bswap32(Word{0,0,0,_data[0]}.i);
     }
 
     // whole frame in bytes
     int frame_size() const
     {
-        return Word{_data[3],_data[2],_data[1],0}.i * block_size;
+        return bswap32(Word{0,_data[1],_data[2],_data[3]}.i) * block_size;
     }
 
     // header in bytes
     int header_size() const
     {
-        return Word{_data[9],_data[8],0,0}.i * block_size;
+        return bswap32(Word{0,0,_data[8],_data[9]}.i) * block_size;
     }
 
     int event_index() const
     {
-        return Word{_data[25],_data[24],_data[23],_data[22]}.i;
+        return bswap32(Word{_data[22],_data[23],_data[24],_data[25]}.i);
     }
 
     int read_offset() const
     {
-        return Word{_data[29],_data[28],0,0}.i;
+        return bswap32(Word{0,0,_data[28],_data[29]}.i);
     }
 
     int asad_index() const
     {
-        return Word{_data[27],0,0,0}.i;
+        return bswap32(Word{0,0,0,_data[27]}.i);
     }
 
     int last_cell(int aget) const
     {
         char i0 = 79 + aget * 2;
         char i1 = 80 + aget * 2;
-        return Word{i1,i0,0,0}.i;
+        return bswap32(Word{0,0,i0,i1}.i);
     }
 };
 
