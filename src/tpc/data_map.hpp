@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 
+#include "config.hpp"
 #include "data_frame.hpp"
 
 namespace tpc

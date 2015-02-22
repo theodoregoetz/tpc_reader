@@ -9,6 +9,7 @@
 #include <vector>
 #include <utility>
 
+#include "config.hpp"
 #include "detail/bswap.hpp"
 
 namespace tpc
@@ -23,27 +24,16 @@ using std::string;
 using std::istream;
 using std::exception;
 
-static const size_t nagets = 4;
-static const size_t nasads = 31;
-static const size_t nchannels = 68;
-
-static const size_t frame_length = nagets * nasads * nchannels;
-
-static const size_t ncells = 512;
-
-static const size_t block_size = 64; // 1 block = 64 bytes
-static const size_t frame_header_size = 2 * block_size; // bytes
-
-union Word
-{
-    array<char,4> c;
-    uint32_t      i;
-};
 
 class DataFrameHeader
 {
   private:
     array<char,frame_header_size> _data;
+    union Word
+    {
+        array<char,4> c;
+        uint32_t      i;
+    };
 
   public:
     DataFrameHeader() {}

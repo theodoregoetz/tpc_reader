@@ -5,6 +5,7 @@
 #include <array>
 #include <vector>
 
+#include "config.hpp"
 #include "data_frame.hpp"
 #include "data_map.hpp"
 #include "detail/log.hpp"
@@ -20,14 +21,6 @@ using std::cerr;
 using std::clog;
 using std::endl;
 
-static const size_t nrings = 32;
-static const array<size_t,nrings> npads{
-     48,  48,  72,  96, 120, 144, 168, 192, 216, 240,
-    208, 218, 230, 214, 212, 214, 220, 224, 232, 238,
-    244, 232, 218, 210, 206, 202, 200, 196, 178, 130,
-    108,  90 };
-static const size_t nsamples = ncells;
-
 class Data
 {
   private:
@@ -35,7 +28,7 @@ class Data
     DataFrame _frame;
     DataMap _map;
 
-    typedef array<int,nsamples> ScalarDataPad;
+    typedef array<int,ncells> ScalarDataPad;
     typedef vector<ScalarDataPad> ScalarDataRing;
     typedef vector<ScalarDataRing> ScalarData;
 
