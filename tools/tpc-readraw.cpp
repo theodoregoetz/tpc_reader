@@ -11,7 +11,7 @@ int main(int argc, char** argv)
     string mapfile = argv[1];
     string infile = argv[2];
 
-    ifstream fin(infile);
+    ifstream fin(infile.c_str());
     if (!fin.good())
     {
         cerr << "Could not open file: " << infile << endl;
@@ -23,9 +23,11 @@ int main(int argc, char** argv)
     int count = 0;
     while (tpc_data.read(fin))
     {
-        for (auto x : tpc_data.adc(22,193))
+        const tpc::Data::ScalarDataPad& data = tpc_data.adc(0,0);
+        tpc::Data::ScalarDataPad::const_iterator x;
+        for (x = data.begin(); x != data.end(); ++x)
         {
-            cout << " " << x;
+            cout << " " << *x;
         }
         cout << endl;
         cin.ignore();

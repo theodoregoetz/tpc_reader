@@ -1,0 +1,79 @@
+import os
+import tarfile
+
+from waflib.Task import Task
+
+def options(opt):
+    pass
+
+def configure(conf):
+    boost_libs = '''\
+        filesystem
+        system
+        log
+        thread
+        date_time
+        program_options
+        unit_test_framework
+    '''.split()
+    conf.env['BOOST_LIBS'] = ['boost_'+l for l in boost_libs]
+
+    conf.env.DEFINES_BOOST = ['NDEBUG']
+    conf.env.INCLUDES_BOOST = ['ext/boost']
+    conf.env.STLIBPATH_BOOST = ['ext/boost/stage/lib']
+
+    for l in conf.env['BOOST_LIBS']:
+        conf.env['STLIB_'+l] = [l]
+
+    conf.env['STLIB_boost_log'] += '''\
+        boost_date_time
+        boost_filesystem
+        boost_system
+        boost_thread
+        '''.split()
+    conf.env['STLIB_boost_filesystem'] += ['boost_system']
+
+class boost_decompress(Task):
+    def run(self):
+        bld = self.generator.bld
+        fname = self.inputs[0].abspath()
+        tar = tarfile.open(fname)
+        tar.extractall(path=os.path.join(bld.out_dir,'ext'))
+        tar.close()
+
+class boost_bootstrap(Task):
+    def run(self):
+        abspath = self.inputs[0].abspath()
+        wd,cmd = os.path.split(abspath)
+        return self.exec_command(cmd, cwd=wd, stdout=None, stderr=None)
+
+class boost_build(Task):
+    def run(self):
+        opts = self.generator.bld.options
+        abspath = self.inputs[0].abspath()
+        wd,cmd = os.path.split(abspath)
+        jobs = max(1,opts.jobs-1)
+        cmd += ' -j{} --layout=system link=static'.format(jobs)
+        return self.exec_command(cmd, cwd=wd, stdout=None, stderr=None)
+
+def build(bld):
+
+    b0 = boost_decompress(env=bld.env)
+    b0.set_inputs(bld.path.find_resource('boost.tar.gz'))
+    b0.set_outputs(bld.path.find_or_declare('boost/bootstrap.sh'))
+    bld.add_to_group(b0)
+
+    b1 = boost_bootstrap(env=bld.env, cwd='boost')
+    b1.set_inputs(bld.path.find_resource('boost/bootstrap.sh'))
+    b1.set_outputs(bld.path.find_or_declare('boost/b2'))
+    bld.add_to_group(b1)
+
+    ptrn = bld.env['cxxstlib_PATTERN']
+    libs = [ptrn % l for l in bld.env['BOOST_LIBS']]
+    libpaths = [os.path.join('boost/stage/lib',l) for l in libs]
+    outputs = [bld.path.find_or_declare(l) for l in libpaths]
+
+    b2 = boost_build(env=bld.env, cwd='boost')
+    b2.set_inputs(bld.path.find_resource('boost/b2'))
+    b2.set_outputs(outputs)
+    bld.add_to_group(b2)

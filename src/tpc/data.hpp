@@ -2,7 +2,6 @@
 #define TPC_DATA_HPP
 
 #include <iostream>
-#include <array>
 #include <vector>
 
 #include "config.hpp"
@@ -14,7 +13,6 @@ namespace tpc
 {
 
 using std::istream;
-using std::array;
 using std::vector;
 using std::exception;
 using std::cerr;
@@ -23,25 +21,28 @@ using std::endl;
 
 class Data
 {
+  public:
+
+    typedef vector<int> ScalarDataPad;
+    typedef vector<ScalarDataPad> ScalarDataRing;
+    typedef vector<ScalarDataRing> ScalarData;
+
   private:
 
     DataFrame _frame;
     DataMap _map;
-
-    typedef array<int,ncells> ScalarDataPad;
-    typedef vector<ScalarDataPad> ScalarDataRing;
-    typedef vector<ScalarDataRing> ScalarData;
-
     ScalarData _adc;
 
     static
     void _clear_scalar_data(ScalarData& data)
     {
-        for (auto& v : data)
+        ScalarData::iterator v;
+        for (v = data.begin(); v != data.end(); ++v)
         {
-            for (auto& vv : v)
+            ScalarDataRing::iterator vv;
+            for (vv = v->begin(); vv != v->end(); ++vv)
             {
-                vv.fill(0);
+                vv->assign(vv->size(),0);
             }
         }
     }
@@ -53,6 +54,11 @@ class Data
         for (int r = 0; r < nrings; r++)
         {
             data[r].resize(npads[r]);
+            ScalarDataRing::iterator v;
+            for (v = data[r].begin(); v != data[r].end(); ++v)
+            {
+                v->resize(ncells);
+            }
         }
     }
 
@@ -81,17 +87,14 @@ class Data
             // read in 31 frames for a complete event
             if (_frame.read(is))
             {
-                for (const auto& elem : _frame)
+                DataFrame::const_iterator elem;
+                for (elem=_frame.begin(); elem != _frame.end(); ++elem)
                 {
-                    const PadID& pad = _map.pad_id(elem.id);
-                    _adc[pad.ring][pad.id][elem.cell] = elem.val;
+                    const PadID& pad = _map.pad_id(elem->id);
+                    _adc[pad.ring][pad.id][elem->cell] = elem->val;
                 }
+                return true;
             }
-            else
-            {
-                return false;
-            }
-            return true;
         }
         catch (exception& e)
         {

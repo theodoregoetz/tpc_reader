@@ -8,14 +8,14 @@ out     = 'build'
 VERSION = '0.0.1'
 APPNAME = 'tpc_reader'
 
-def options(ctx):
+def options(opt):
 
     import os,sys
 
-    ctx.load('compiler_cxx') # boost
+    opt.load('compiler_cxx') # boost
 
     ### CONFIGURE options
-    cfg_opts = ctx.exec_dict['opt'].get_option_group('configure options')
+    cfg_opts = opt.exec_dict['opt'].get_option_group('configure options')
 
     cfg_opts.add_option('--debug', dest='debug',
         action='store_true', default=False,
@@ -38,7 +38,7 @@ def options(ctx):
         help = 'list of include paths applied to all targets, separated by colons (:) or commas (,). default: %default')
 
     ### BUILD options
-    bld_opts = ctx.exec_dict['opt'].get_option_group('build and install options')
+    bld_opts = opt.exec_dict['opt'].get_option_group('build and install options')
 
     bld_opts.add_option('--all', dest='all',
         action='store_true', default=False,
@@ -47,13 +47,17 @@ def options(ctx):
         action='store_true', default=False,
         help='Build unit tests. default: %default')
 
+    opt.recurse('ext')
+    #opt.recurse('src')
+    #opt.recurse('tools')
+    #opt.recurse('test')
 
 
-def configure(ctx):
+def configure(conf):
     import os,re
     from subprocess import Popen, PIPE
 
-    ctx.load('compiler_cxx')
+    conf.load('compiler_cxx')
 
     def get_system_libpath(compiler):
         pathlist = []
@@ -106,20 +110,20 @@ def configure(ctx):
         return pathlist
 
 
-    system_libpath = get_system_libpath(ctx.env.CXX)
-    system_includes = get_system_includes(ctx.env.CXX)
+    system_libpath = get_system_libpath(conf.env.CXX)
+    system_includes = get_system_includes(conf.env.CXX)
 
 
-    if ctx.options.libpath != None:
-        for libpath in re.split('[:,]+', ctx.options.libpath):
+    if conf.options.libpath != None:
+        for libpath in re.split('[:,]+', conf.options.libpath):
             if libpath != '':
                 if libpath not in system_libpath:
-                    ctx.env.append_unique('LIBPATH',libpath)
-    if ctx.options.includes != None:
-        for incpath in re.split('[:,]+', ctx.options.includes):
+                    conf.env.append_unique('LIBPATH',libpath)
+    if conf.options.includes != None:
+        for incpath in re.split('[:,]+', conf.options.includes):
             if incpath != '':
                 if incpath not in system_includes:
-                    ctx.env.append_unique('INCLUDES', incpath)
+                    conf.env.append_unique('INCLUDES', incpath)
 
 
     ### MANDATORY DEPENDENCIES
@@ -128,36 +132,46 @@ def configure(ctx):
 
     try:
 
-        cxx11env = ctx.env.derive()
-        ctx.parse_flags('-std=c++11', 'C++11',
+        cxx11env = conf.env.derive()
+        conf.parse_flags('-std=c++11', 'C++11',
             env=cxx11env)
-        ctx.check_cxx(fragment=cxx11_code, env=cxx11env,
+        conf.check_cxx(fragment=cxx11_code, env=cxx11env,
             use='C++11', msg='C++11 support')
-        ctx.parse_flags('-std=c++11', 'C++11')
+        conf.parse_flags('-std=c++11', 'C++11')
 
-    except ctx.errors.ConfigurationError:
+    except conf.errors.ConfigurationError:
 
-        cxx11env = ctx.env.derive()
-        ctx.parse_flags('-std=c++0x', 'C++11',
+        cxx11env = conf.env.derive()
+        conf.parse_flags('-std=c++0x', 'C++11',
             env=cxx11env)
-        ctx.check_cxx(fragment=cxx11_code, env=cxx11env,
+        conf.check_cxx(fragment=cxx11_code, env=cxx11env,
             use='C++11', msg='C++0x support')
-        ctx.parse_flags('-std=c++0x', 'C++11')
+        conf.parse_flags('-std=c++0x', 'C++11')
 
-    ctx.env.CXXFLAGS += ['-Ofast']
+    conf.env.CXXFLAGS += ['-Ofast']
 
-    if ctx.options.debug:
-        ctx.env.CXXFLAGS += ['-g','-DDEBUG']
+    if conf.options.debug:
+        conf.env.CXXFLAGS += ['-g','-DDEBUG']
 
-    ctx.check_cfg(
+    conf.check_cfg(
         uselib_store = 'ROOT',
         path         = 'root-config',
         args         = ['--cflags', '--glibs'],
         package      = '' )
 
+    conf.check_cxx(
+        uselib_store = 'pthread',
+        lib          = ['pthread'],
+        msg          = 'Checking for pthread')
+
+    conf.recurse('ext')
+    #conf.recurse('src')
+    #conf.recurse('tools')
+    #conf.recurse('test')
+
     """
-    ctx.load('boost')
-    ctx.check_boost()
+    conf.load('boost')
+    conf.check_boost()
 
     boost_required_libs = '''
         program_options
@@ -171,13 +185,13 @@ def configure(ctx):
     '''.split()
 
     for libname in boost_required_libs:
-        libpath,lib = ctx.boost_get_libs(libname)
+        libpath,lib = conf.boost_get_libs(libname)
         if libpath not in system_libpath:
-            ctx.env.append_unique('LIBPATH_BOOST',libpath)
-        ctx.env.append_unique('LIB_boost_'+libname, lib)
-        ctx.to_log('boost library found: {}'.format(libname))
+            conf.env.append_unique('LIBPATH_BOOST',libpath)
+        conf.env.append_unique('LIB_boost_'+libname, lib)
+        conf.to_log('boost library found: {}'.format(libname))
 
-    ctx.env.append_unique('LIB_boost_log',
+    conf.env.append_unique('LIB_boost_log',
         ['boost_'+l for l in '''\
             log_setup
             filesystem
@@ -186,34 +200,30 @@ def configure(ctx):
             chrono
             thread
         '''.split()])
-    ctx.env.append_unique('DEFINES', 'HAVE_BOOST_LOG')
+    conf.env.append_unique('DEFINES', 'HAVE_BOOST_LOG')
 
-    ctx.env.append_unique('LIB_boost_filesystem',['boost_system'])
+    conf.env.append_unique('LIB_boost_filesystem',['boost_system'])
 
-    ctx.env.append_unique('DEFINES_BOOST', ['BOOST_LOG_DYN_LINK'])
+    conf.env.append_unique('DEFINES_BOOST', ['BOOST_LOG_DYN_LINK'])
 
-    ctx.check_cxx(
-        uselib_store = 'pthread',
-        lib          = ['pthread'],
-        msg          = 'Checking for pthread')
 
-    ctx.check_cfg(
+    conf.check_cfg(
         uselib_store = 'MYSQL',
         path         = 'mysql_config',
         args         = ['--cflags', '--libs'],
         package      = '' )
 
-    def remove_flags(ctx, package_name, *list_of_flags):
+    def remove_flags(conf, package_name, *list_of_flags):
         flagtypes = 'CXXFLAGS CFLAGS LINKFLAGS'.split(' ')
         cenvlist = []
         for ft in flagtypes:
-            cenvlist += [ctx.env[ft+'_'+package_name]]
+            cenvlist += [conf.env[ft+'_'+package_name]]
         for f in list_of_flags:
             for cenv in cenvlist:
                 if f in cenv:
                     cenv.remove(f)
 
-    remove_flags(ctx, 'MYSQL', '-fstack-protector-strong')
+    remove_flags(conf, 'MYSQL', '-fstack-protector-strong')
     """
 
 
@@ -225,39 +235,36 @@ def configure(ctx):
     '''.split()
     for libname in boost_optional_libs:
         try:
-            libpath,lib = ctx.boost_get_libs(libname)
+            libpath,lib = conf.boost_get_libs(libname)
             if libpath not in system_libpath:
-                ctx.env.append_unique('LIBPATH_BOOST',libpath)
-            ctx.env.append_unique('LIB_boost_'+libname, lib)
-            ctx.to_log('boost library found: {}'.format(libname))
-        except ctx.errors.ConfigurationError:
-            ctx.to_log('boost library not found: {}'.format(libname))
+                conf.env.append_unique('LIBPATH_BOOST',libpath)
+            conf.env.append_unique('LIB_boost_'+libname, lib)
+            conf.to_log('boost library found: {}'.format(libname))
+        except conf.errors.ConfigurationError:
+            conf.to_log('boost library not found: {}'.format(libname))
 
     try:
-        ctx.check_cxx(
+        conf.check_cxx(
             uselib_store = 'EXPAT',
             lib          = 'expat',
             header_name  = ['expat.h'],
             msg          = 'Checking for expat')
-    except ctx.errors.ConfigurationError:
-        ctx.check_cfg(
+    except conf.errors.ConfigurationError:
+        conf.check_cfg(
             uselib_store = 'EXPAT',
             package      = 'expat',
             args         = ['--cflags', '--libs'],
             mandatory    = False )
 
     ### some configuration based on the options above
-    if not ctx.options.debug:
-        ctx.env.append_unique('DEFINES_BOOST', ['NDEBUG'])
+    if not conf.options.debug:
+        conf.env.append_unique('DEFINES_BOOST', ['NDEBUG'])
 
-    ### recurse into external dependencies that are included
-    ### with this project's source tree
-    ctx.recurse('ext')
     """
 
 
-def build(ctx):
-    #ctx.recurse('ext')
-    #ctx.recurse('src')
-    #ctx.recurse('test')
-    ctx.recurse('tools')
+def build(bld):
+    bld.recurse('ext')
+    #bld.recurse('src')
+    bld.recurse('tools')
+    bld.recurse('test')

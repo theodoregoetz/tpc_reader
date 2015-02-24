@@ -3,8 +3,12 @@
 
 #include <istream>
 #include <fstream>
+#include <stdexcept>
 #include <string>
 #include <map>
+
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 #include "config.hpp"
 #include "data_frame.hpp"
@@ -19,6 +23,10 @@ using std::istream;
 using std::ifstream;
 using std::string;
 using std::map;
+
+typedef std::runtime_error system_error;
+
+namespace fs = ::boost::filesystem;
 
 inline
 bool operator<(const DataFrameElementID& lhs,
@@ -47,17 +55,24 @@ struct PadID
 
 class DataMap
 {
+
   private:
     map<DataFrameElementID,PadID> _map;
 
   public:
     DataMap() {}
 
-    void load(const string& filename)
+    void load(const fs::path& filepath)
     {
         try
         {
-            ifstream fin(filename);
+            if (! fs::exists(filepath))
+            {
+                string err = "TPC map file (" + filepath.string() \
+                           + ") does not exist\n";
+                throw system_error(err);
+            }
+            fs::ifstream fin(filepath);
             DataFrameElementID key;
             PadID val;
             while (fin >> key.aget >> key.asad >> key.channel

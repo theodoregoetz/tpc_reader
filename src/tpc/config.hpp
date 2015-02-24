@@ -1,12 +1,8 @@
 #ifndef TPC_CONFIG_HPP
 #define TPC_CONFIG_HPP
 
-#include <array>
-
 namespace tpc
 {
-
-using std::array;
 
 // number of ASAD boards
 static const size_t nasads = 31;
@@ -34,7 +30,7 @@ static const size_t frame_header_size = 2 * block_size;
 static const size_t nrings = 32;
 
 // number of pads in each ring starting from the center
-static const array<size_t,nrings> npads{
+static const size_t npads[nrings] = {
      48,  48,  72,  96, 120, 144, 168, 192, 216, 240,
     208, 218, 230, 214, 212, 214, 220, 224, 232, 238,
     244, 232, 218, 210, 206, 202, 200, 196, 178, 130,

@@ -1,13 +1,12 @@
 #ifndef TPC_DATA_FRAME_HPP
 #define TPC_DATA_FRAME_HPP
 
+#include <inttypes.h> // uint32_t
+
 #include <algorithm>
-#include <array>
-#include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <utility>
 
 #include "config.hpp"
 #include "detail/bswap.hpp"
@@ -17,8 +16,6 @@ namespace tpc
 
 using std::cerr;
 using std::endl;
-using std::uint32_t;
-using std::array;
 using std::vector;
 using std::string;
 using std::istream;
@@ -28,15 +25,15 @@ using std::exception;
 class DataFrameHeader
 {
   private:
-    array<char,frame_header_size> _data;
+    vector<char> _data;
     union Word
     {
-        array<char,4> c;
-        uint32_t      i;
+        char     c[4];
+        uint32_t i;
     };
     int _get(size_t start, size_t size) const
     {
-        Word w{0,0,0,0};
+        Word w = {0,0,0,0};
         for (size_t i=0; i<size; i++)
         {
             w.c[i] = _data[start+size-i-1];
@@ -45,7 +42,9 @@ class DataFrameHeader
     }
 
   public:
-    DataFrameHeader() {}
+    DataFrameHeader()
+    : _data(frame_header_size)
+    {}
 
     void read(istream& is)
     {
@@ -97,9 +96,10 @@ class DataFrameBuffer : public vector<uint32_t>
     DataFrameHeader _header;
     void _bswap()
     {
-        for (auto& x : *this)
+        DataFrameBuffer::iterator x;
+        for (x = this->begin(); x != this->end(); ++x)
         {
-            x = bswap32(x);
+            *x = bswap32(*x);
         }
     }
 
@@ -117,10 +117,6 @@ class DataFrameBuffer : public vector<uint32_t>
                 is.read((char*)this->data(), frame_data_size);
                 _bswap();
                 return true;
-            }
-            else
-            {
-                return false;
             }
         }
         catch (exception& e)
@@ -171,14 +167,15 @@ class DataFrame : public vector<DataFrameElement>
 
                 this->resize(_buffer.header().frame_size() / sizeof(uint32_t));
 
-                auto elem = this->begin();
-                for (const auto& x : _buffer)
+                DataFrame::iterator elem = this->begin();
+                DataFrameBuffer::const_iterator x;
+                for (x = _buffer.begin(); x != _buffer.end(); ++x)
                 {
                     elem->id.asad    = asad;
-                    elem->id.aget    = x >> 30 & 0x3;
-                    elem->id.channel = x >> 23 & 0x7f;
-                    elem->cell       = x >> 14 & 0x1ff;
-                    elem->val        = x & 0xfff;
+                    elem->id.aget    = *x >> 30 & 0x3;
+                    elem->id.channel = *x >> 23 & 0x7f;
+                    elem->cell       = *x >> 14 & 0x1ff;
+                    elem->val        = *x & 0xfff;
                     if (elem->id.asad < nasads &&
                         elem->id.aget < nagets &&
                         elem->id.channel < nchannels &&
@@ -189,10 +186,6 @@ class DataFrame : public vector<DataFrameElement>
                 }
                 this->erase(elem,this->end());
                 return true;
-            }
-            else
-            {
-                return false;
             }
         }
         catch (exception& e)

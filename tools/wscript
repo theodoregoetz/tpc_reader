@@ -1,33 +1,38 @@
 # encoding: utf-8
 
-def build(ctx):
+def build(opt):
 
-    ctx.program(
+    opt.program(
         target = 'tpc-readraw',
         source = ['tpc-readraw.cpp'],
         includes = ['#src'],
-        use = 'C++11')
+        use = '''\
+            BOOST
+                boost_filesystem
+        ''')
 
-    ctx.program(
+    '''
+    opt.program(
         target = 'tpc-readraw-minmax',
         source = ['tpc-readraw-minmax.cpp'],
         includes = ['#src'],
         use = 'C++11')
 
-    ctx.program(
+    opt.program(
         target = 'tpc-readraw-frame',
         source = ['tpc-readraw-frame.cpp'],
         includes = ['#src'],
         use = 'C++11')
 
-    ctx.program(
+    opt.program(
         target = 'tpc-readraw-timing',
         source = ['tpc-readraw-timing.cpp'],
         includes = ['#src'],
         use = 'C++11')
 
-    ctx.program(
+    opt.program(
         target = 'tpc-readraw-framedisplay',
         source = ['tpc-readraw-framedisplay.cpp'],
         includes = ['#src'],
         use = 'C++11 ROOT')
+    '''
