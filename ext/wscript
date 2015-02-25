@@ -1,5 +1,4 @@
 import os
-import tarfile
 
 from waflib.Task import Task
 
@@ -37,15 +36,23 @@ class boost_decompress(Task):
     def run(self):
         bld = self.generator.bld
         fname = self.inputs[0].abspath()
-        tar = tarfile.open(fname)
-        tar.extractall(path=os.path.join(bld.out_dir,'ext'))
-        tar.close()
+        outdir = os.path.join(bld.out_dir,'ext')
+        try:
+            import tarfile
+            tar = tarfile.open(fname)
+            tar.extractall(path=outdir)
+            tar.close()
+        except ImportError:
+            if not os.path.exists(outdir):
+                os.makedirs(outdir)
+            cmd = 'tar -zxvf {0} -C {1}'.format(fname,outdir)
+            return self.exec_command(cmd)
 
 class boost_bootstrap(Task):
     def run(self):
         abspath = self.inputs[0].abspath()
         wd,cmd = os.path.split(abspath)
-        return self.exec_command(cmd, cwd=wd, stdout=None, stderr=None)
+        return self.exec_command('./'+cmd, cwd=wd, stdout=None, stderr=None)
 
 class boost_build(Task):
     def run(self):
@@ -53,8 +60,8 @@ class boost_build(Task):
         abspath = self.inputs[0].abspath()
         wd,cmd = os.path.split(abspath)
         jobs = max(1,opts.jobs-1)
-        cmd += ' -j{} --layout=system link=static'.format(jobs)
-        return self.exec_command(cmd, cwd=wd, stdout=None, stderr=None)
+        cmd += ' -j{0} --layout=system link=static'.format(jobs,)
+        return self.exec_command('./'+cmd, cwd=wd, stdout=None, stderr=None)
 
 def build(bld):
 

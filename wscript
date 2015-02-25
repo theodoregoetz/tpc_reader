@@ -168,10 +168,17 @@ Please consider upgrading your C++ compiler.
 '''
 
     if not conf.options.no_opt:
-        conf.env.CXXFLAGS += ['-Ofast']
+        try:
+            conf.check_cxx(
+                uselib_store = 'OPT',
+                cxxflags = ['-Ofast'])
+            conf.env.CXXFLAGS += ['-Ofast']
+        except conf.errors.ConfigurationError:
+            conf.env.CXXFLAGS += ['-O3']
 
     if conf.options.debug:
         conf.env.CXXFLAGS += ['-g','-DDEBUG']
+
 
     conf.check_cfg(
         uselib_store = 'ROOT',

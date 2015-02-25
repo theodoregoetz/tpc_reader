@@ -176,6 +176,7 @@ class DataFrame : public vector<DataFrameElement>
                     elem->id.channel = *x >> 23 & 0x7f;
                     elem->cell       = *x >> 14 & 0x1ff;
                     elem->val        = *x & 0xfff;
+                    elem->cell = (elem->cell - this->header().last_cell(elem->id.aget) - 1 + ncells) % ncells;
                     if (elem->id.asad < nasads &&
                         elem->id.aget < nagets &&
                         elem->id.channel < nchannels &&
