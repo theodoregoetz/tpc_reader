@@ -39,7 +39,7 @@ def build(bld):
             ROOT
         ''')
 
-    if bld.env['HAS_C++11']:
+    if bld.env['HAS_C++11'] and False:
 
         bld.program(
             target = 'tpc-readraw-timing',
