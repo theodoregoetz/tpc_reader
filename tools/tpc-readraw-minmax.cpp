@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-#include "tpc/data.hpp"
+#include "tpc/data_frame.hpp"
 
 using namespace std;
 
@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 {
     string infile = argv[1];
 
-    ifstream fin(infile);
+    ifstream fin(infile.c_str());
     if (!fin.good())
     {
         cerr << "Could not open file: " << infile << endl;
@@ -31,9 +31,10 @@ int main(int argc, char** argv)
 
     while (fr.read(fin))
     {
-        for (const auto& elem : fr)
+        tpc::DataFrame::const_iterator elem;
+        for (elem = fr.begin(); elem != fr.end(); ++elem)
         {
-            const tpc::DataFrameElementID& id = elem.id;
+            const tpc::DataFrameElementID& id = elem->id;
             min.aget    = id.aget    < min.aget    ? id.aget    : min.aget;
             min.asad    = id.asad    < min.asad    ? id.asad    : min.asad;
             min.channel = id.channel < min.channel ? id.channel : min.channel;
@@ -43,10 +44,15 @@ int main(int argc, char** argv)
         }
     }
 
-    cout << "min.aget: " << min.aget << endl
-         << "min.asad: " << min.asad << endl
-         << "min.chnl: " << min.channel << endl;
-    cout << "max.aget: " << max.aget << endl
-         << "max.asad: " << max.asad << endl
-         << "max.chnl: " << max.channel << endl;
+    cout << "      aget asad chnl\n";
+    cout << "min: ";
+    cout.width(5); cout << min.aget;
+    cout.width(5); cout << min.asad;
+    cout.width(5); cout << min.channel;
+    cout << endl;
+    cout << "max: ";
+    cout.width(5); cout << max.aget;
+    cout.width(5); cout << max.asad;
+    cout.width(5); cout << max.channel;
+    cout << endl;
 }

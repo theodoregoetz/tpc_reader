@@ -5,7 +5,7 @@ from distutils.spawn import find_executable as which
 
 top     = '.'
 out     = 'build'
-VERSION = '0.0.1'
+VERSION = '0.0.2'
 APPNAME = 'tpc_reader'
 
 def options(opt):
@@ -20,6 +20,10 @@ def options(opt):
     cfg_opts.add_option('--debug', dest='debug',
         action='store_true', default=False,
         help='Build in debug mode. default: %default')
+
+    cfg_opts.add_option('--no-opt', dest='no_opt',
+        action='store_true', default=False,
+        help='Turn off optimizations. default: %default')
 
     cfg_opts.add_option('--includes', dest='includes',
         default = None,
@@ -40,10 +44,10 @@ def options(opt):
     ### BUILD options
     bld_opts = opt.exec_dict['opt'].get_option_group('build and install options')
 
-    bld_opts.add_option('--all', dest='all',
+    bld_opts.add_option('--all', dest='build_all',
         action='store_true', default=False,
         help='Build everything including unit tests. default: %default')
-    bld_opts.add_option('--test', dest='test',
+    bld_opts.add_option('--test', dest='build_test',
         action='store_true', default=False,
         help='Build unit tests. default: %default')
 
@@ -138,6 +142,7 @@ def configure(conf):
         conf.check_cxx(fragment=cxx11_code, env=cxx11env,
             use='C++11', msg='C++11 support')
         conf.parse_flags('-std=c++11', 'C++11')
+        conf.env['HAS_C++11'] = True
 
     except conf.errors.ConfigurationError:
 
@@ -147,8 +152,23 @@ def configure(conf):
         conf.check_cxx(fragment=cxx11_code, env=cxx11env,
             use='C++11', msg='C++0x support')
         conf.parse_flags('-std=c++0x', 'C++11')
+        conf.env['HAS_C++11'] = True
 
-    conf.env.CXXFLAGS += ['-Ofast']
+    except conf.errors.ConfigurationError:
+
+        conf.env['HAS_C++11'] = False
+        print '''\
+C++11 may not be supported by your compiler.
+
+This will disable certain programs / features
+in this project, but the main parts should
+still work.
+
+Please consider upgrading your C++ compiler.
+'''
+
+    if not conf.options.no_opt:
+        conf.env.CXXFLAGS += ['-Ofast']
 
     if conf.options.debug:
         conf.env.CXXFLAGS += ['-g','-DDEBUG']
@@ -167,7 +187,7 @@ def configure(conf):
     conf.recurse('ext')
     #conf.recurse('src')
     #conf.recurse('tools')
-    #conf.recurse('test')
+    conf.recurse('test')
 
     """
     conf.load('boost')
@@ -264,7 +284,13 @@ def configure(conf):
 
 
 def build(bld):
+
+    if bld.options.build_all:
+        bld.options.build_test = True
+
     bld.recurse('ext')
     #bld.recurse('src')
     bld.recurse('tools')
-    bld.recurse('test')
+
+    if bld.options.build_test:
+        bld.recurse('test')

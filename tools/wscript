@@ -1,8 +1,8 @@
 # encoding: utf-8
 
-def build(opt):
+def build(bld):
 
-    opt.program(
+    bld.program(
         target = 'tpc-readraw',
         source = ['tpc-readraw.cpp'],
         includes = ['#src'],
@@ -11,28 +11,42 @@ def build(opt):
                 boost_filesystem
         ''')
 
-    '''
-    opt.program(
+    bld.program(
         target = 'tpc-readraw-minmax',
         source = ['tpc-readraw-minmax.cpp'],
         includes = ['#src'],
-        use = 'C++11')
+        use = '''\
+            BOOST
+                boost_filesystem
+        ''')
 
-    opt.program(
+    bld.program(
         target = 'tpc-readraw-frame',
         source = ['tpc-readraw-frame.cpp'],
         includes = ['#src'],
-        use = 'C++11')
+        use = '''\
+            BOOST
+                boost_filesystem
+        ''')
 
-    opt.program(
-        target = 'tpc-readraw-timing',
-        source = ['tpc-readraw-timing.cpp'],
-        includes = ['#src'],
-        use = 'C++11')
-
-    opt.program(
+    bld.program(
         target = 'tpc-readraw-framedisplay',
         source = ['tpc-readraw-framedisplay.cpp'],
         includes = ['#src'],
-        use = 'C++11 ROOT')
-    '''
+        use = '''\
+            BOOST
+                boost_filesystem
+            ROOT
+        ''')
+
+    if bld.env['HAS_C++11']:
+
+        bld.program(
+            target = 'tpc-readraw-timing',
+            source = ['tpc-readraw-timing.cpp'],
+            includes = ['#src'],
+            use = '''\
+                C++11
+                BOOST
+                    boost_filesystem
+            ''')

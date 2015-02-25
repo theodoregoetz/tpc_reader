@@ -18,7 +18,7 @@ int main(int argc, char** argv)
     string mapfile = argv[1];
     string infile = argv[2];
 
-    ifstream fin(infile);
+    ifstream fin(infile.c_str());
     if (!fin.good())
     {
         cerr << "Could not open file: " << infile << endl;
@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     tpc::Data tpc_data;
     tpc_data.load_map(mapfile);
 
-    size_t npads_max = *max_element(tpc::npads.begin(),tpc::npads.end());
+    size_t npads_max = *max_element(tpc::npads,tpc::npads+tpc::nrings);
 
     TApplication theApp("theApp", &argc, argv);
     TCanvas can("can");

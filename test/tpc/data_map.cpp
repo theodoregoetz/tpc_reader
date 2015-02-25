@@ -11,6 +11,7 @@ BOOST_AUTO_TEST_SUITE( DataMap_test )
 namespace fs = boost::filesystem;
 
 using std::string;
+
 using tpc::DataMap;
 using tpc::PadID;
 using tpc::DataFrameElementID;

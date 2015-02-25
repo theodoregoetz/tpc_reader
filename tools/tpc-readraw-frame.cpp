@@ -15,7 +15,7 @@ int main(int argc, char** argv)
     tpc::DataMap mp;
     mp.load(mapfile);
 
-    ifstream fin(infile);
+    ifstream fin(infile.c_str());
     if (!fin.good())
     {
         cerr << "Could not open file: " << infile << endl;
@@ -23,7 +23,6 @@ int main(int argc, char** argv)
     }
     tpc::DataFrame fr;
 
-    cout << "aget, asad, channel\n";
     while (fr.read(fin))
     {
         const tpc::DataFrameHeader& hd = fr.header();
@@ -46,9 +45,13 @@ int main(int argc, char** argv)
 
         cout << "        ring pad aget channel cell val word\n";
         int fsize = fr.size();
-        for (auto i : {300,301,302,303,304,305,fsize-4,fsize-3,fsize-2,fsize-1})
+        static const size_t idxs[] = {
+            300,301,302,303,304,305,
+            fsize-4,fsize-3,fsize-2,fsize-1 };
+        for (size_t i=0; i<10; i++)
         {
-            const auto& elem = fr[i];
+            size_t idx = idxs[i];
+            const tpc::DataFrameElement& elem = fr[idx];
             cout << "       ";
             cout.width(5); cout << mp.pad_id(elem.id).ring;
             cout.width(5); cout << mp.pad_id(elem.id).id;
