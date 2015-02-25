@@ -1,0 +1,23 @@
+from waflib.Task import Task
+
+class rootdict(Task):
+    run_str = 'rootcint -f ${TGT} -c ${SRC[1]} ${SRC[0]}'
+    color   = 'PINK'
+
+def build(bld):
+    rootdict(
+        env = bld.env,
+        target = 'main_window_dict.cpp',
+        source = ['main_window_linkdef.hpp', 'main_window.hpp'])
+
+    bld.program(
+        target = 'tpc-online-monitor',
+        sources = '''\
+            main_window_dict.cpp
+            main_window.cpp
+            tpc-online-monitor.cpp'''.split(),
+        use = '''\
+            BOOST
+                boost_filesystem
+            ROOT
+        ''')
