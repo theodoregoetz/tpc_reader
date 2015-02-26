@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 #include "config.hpp"
 #include "detail/bswap.hpp"
@@ -20,6 +21,7 @@ using std::vector;
 using std::string;
 using std::istream;
 using std::exception;
+using std::runtime_error;
 
 
 class DataFrameHeader
@@ -46,9 +48,19 @@ class DataFrameHeader
     : _data(frame_header_size)
     {}
 
-    void read(istream& is)
+    bool read(istream& is)
     {
-        is.read(&_data.front(),frame_header_size);
+        try
+        {
+            is.read(&_data.front(),frame_header_size);
+            return true;
+        }
+        catch (exception& e)
+        {
+            string err = "Exception reading raw TPC data frame header.";
+            throw runtime_error(err);
+        }
+        return false;
     }
 
     // meta_type always = 6
@@ -88,6 +100,11 @@ class DataFrameHeader
     {
         return _get(79 + 2 * aget, 2);
     }
+
+    int data_size() const
+    {
+        return this->frame_size() - this->header_size();
+    }
 };
 
 class DataFrameBuffer : public vector<uint32_t>
@@ -104,26 +121,36 @@ class DataFrameBuffer : public vector<uint32_t>
     }
 
   public:
-    bool read(istream& is)
+
+    bool read_header(istream& is)
+    {
+        _header.read(is);
+    }
+
+    bool read_data(istream& is)
     {
         try
         {
-            if (is.good() && ! is.eof())
-            {
-                _header.read(is);
-                size_t frame_data_size = _header.frame_size() - _header.header_size();
-                size_t frame_data_words = frame_data_size / sizeof(uint32_t);
-                this->resize(frame_data_words);
-                is.read((char*)this->data(), frame_data_size);
-                _bswap();
-                return true;
-            }
+            size_t frame_data_size = _header.data_size();
+            size_t frame_data_words = frame_data_size / sizeof(uint32_t);
+            this->resize(frame_data_words);
+            is.read((char*)this->data(), frame_data_size);
+            _bswap();
+            return true;
         }
         catch (exception& e)
         {
-            cerr << "Exception reading raw TPC data:\n"
-                 << e.what();
-            throw e;
+            string err = "Exception reading raw TPC buffer.";
+            throw runtime_error(err);
+        }
+        return false;
+    }
+
+    bool read(istream& is)
+    {
+        if (_header.read(is))
+        {
+            return this->read_data(is);
         }
         return false;
     }
@@ -157,11 +184,16 @@ class DataFrame : public vector<DataFrameElement>
   public:
     DataFrame() {}
 
-    bool read(istream& is)
+    bool read_header(istream& is)
+    {
+        return _buffer.read_header(is);
+    }
+
+    bool read_data(istream& is)
     {
         try
         {
-            if (_buffer.read(is))
+            if (_buffer.read_data(is))
             {
                 int asad    = _buffer.header().asad_index();
 
@@ -191,9 +223,17 @@ class DataFrame : public vector<DataFrameElement>
         }
         catch (exception& e)
         {
-            cerr << "Exception reading raw TPC data:\n"
-                 << e.what();
-            throw e;
+            string err = "Exception reading raw TPC data.";
+            throw runtime_error(err);
+        }
+        return false;
+    }
+
+    bool read(istream& is)
+    {
+        if (_buffer.read_header(is))
+        {
+            return this->read_data(is);
         }
         return false;
     }

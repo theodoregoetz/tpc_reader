@@ -30,6 +30,23 @@ def build(bld):
         ''')
 
     bld.program(
+        target = 'tpc-readraw-frame-tcp',
+        source = ['tpc-readraw-frame-tcp.cpp'],
+        includes = ['#src'],
+        use = '''\
+            BOOST
+                boost_filesystem
+        ''')
+    bld.program(
+        target = 'tpc-readraw-frame-tcp-simple',
+        source = ['tpc-readraw-frame-tcp-simple.cpp'],
+        includes = ['#src'],
+        use = '''\
+            BOOST
+                boost_filesystem
+        ''')
+
+    bld.program(
         target = 'tpc-readraw-framedisplay',
         source = ['tpc-readraw-framedisplay.cpp'],
         includes = ['#src'],
@@ -52,3 +69,13 @@ def build(bld):
             ''')
 
     bld.recurse('online_monitor')
+
+    bld.program(
+        target = 'tcp-dump',
+        source = ['tcp-dump.cpp'],
+        includes = ['#src'],
+        use = '''\
+            BOOST
+                boost_filesystem
+            pthread
+        ''')
