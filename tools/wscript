@@ -2,49 +2,25 @@
 
 def build(bld):
 
-    bld.program(
-        target = 'tpc-readraw',
-        source = ['tpc-readraw.cpp'],
-        includes = ['#src'],
-        use = '''\
-            BOOST
-                boost_filesystem
-        ''')
+    progs = '''
+        tpc-readraw
+        tpc-readraw-minmax
+        tpc-readraw-frame
+        tpc-readraw-frame-tcp
+        tpc-readraw-frame-tcp-simple
+        tpc-readraw-frame-tcp-simple2
+        tcp-dump
+    '''.split()
 
-    bld.program(
-        target = 'tpc-readraw-minmax',
-        source = ['tpc-readraw-minmax.cpp'],
-        includes = ['#src'],
-        use = '''\
-            BOOST
-                boost_filesystem
-        ''')
-
-    bld.program(
-        target = 'tpc-readraw-frame',
-        source = ['tpc-readraw-frame.cpp'],
-        includes = ['#src'],
-        use = '''\
-            BOOST
-                boost_filesystem
-        ''')
-
-    bld.program(
-        target = 'tpc-readraw-frame-tcp',
-        source = ['tpc-readraw-frame-tcp.cpp'],
-        includes = ['#src'],
-        use = '''\
-            BOOST
-                boost_filesystem
-        ''')
-    bld.program(
-        target = 'tpc-readraw-frame-tcp-simple',
-        source = ['tpc-readraw-frame-tcp-simple.cpp'],
-        includes = ['#src'],
-        use = '''\
-            BOOST
-                boost_filesystem
-        ''')
+    for p in progs:
+        bld.program(
+            target = p,
+            source = [p+'.cpp'],
+            includes = ['#src'],
+            use = '''\
+                BOOST
+                    boost_filesystem
+            ''')
 
     bld.program(
         target = 'tpc-readraw-framedisplay',
@@ -69,13 +45,3 @@ def build(bld):
             ''')
 
     bld.recurse('online_monitor')
-
-    bld.program(
-        target = 'tcp-dump',
-        source = ['tcp-dump.cpp'],
-        includes = ['#src'],
-        use = '''\
-            BOOST
-                boost_filesystem
-            pthread
-        ''')

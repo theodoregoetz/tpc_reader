@@ -14,7 +14,6 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-
     string mapfile = argv[1];
     string infile = argv[2];
 

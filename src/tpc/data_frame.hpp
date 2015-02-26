@@ -156,7 +156,7 @@ class DataFrameBuffer : public vector<uint32_t>
     }
 
     const
-    DataFrameHeader& header()
+    DataFrameHeader& header() const
     {
         return _header;
     }
@@ -239,13 +239,13 @@ class DataFrame : public vector<DataFrameElement>
     }
 
     const
-    DataFrameHeader& header()
+    DataFrameHeader& header() const
     {
         return _buffer.header();
     }
 
     const
-    DataFrameBuffer& buffer()
+    DataFrameBuffer& buffer() const
     {
         return _buffer;
     }

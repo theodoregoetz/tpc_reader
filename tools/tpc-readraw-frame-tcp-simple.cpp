@@ -34,10 +34,7 @@ size_t get_data_size(const vector<char>& v)
 
 int main(int argc, char** argv)
 {
-    string outfile = "out.graw";
-    ofstream fout(outfile.c_str(), ios::binary);
-
-    static const size_t buffer_max = 2097152; // 2MB
+    static const size_t buffer_max = 262144; // 2**18
     static const size_t header_size = 128;
     vector<char> header(header_size);
     vector<char> data;
@@ -56,11 +53,12 @@ int main(int argc, char** argv)
         bool have_header = false;
         bool have_data = false;
         size_t data_size;
+        size_t nbytes_received;
         while (true)
         {
             mutable_buffer mbuf = sbuf.prepare(buffer_max);
-            size_t n = socket.receive(mbuf);
-            sbuf.commit(n);
+            nbytes_received = socket.receive(mbuf);
+            sbuf.commit(nbytes_received);
 
             if (have_header)
             {
@@ -83,9 +81,9 @@ int main(int argc, char** argv)
 
             if (have_data && have_header)
             {
-                fout.write(&header.front(),header.size());
-                fout.write(&data.front(),data.size());
-                fout.flush();
+                cout.write(&header.front(),header.size());
+                cout.write(&data.front(),data.size());
+                cout.flush();
                 have_header = false;
                 have_data = false;
             }
