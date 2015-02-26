@@ -18,7 +18,7 @@ def configure(conf):
     conf.env['BOOST_LIBS'] = ['boost_'+l for l in boost_libs]
 
     conf.env.DEFINES_BOOST = ['NDEBUG']
-    conf.env.INCLUDES_BOOST = ['ext/boost']
+    conf.env.INCLUDES_BOOST = ['#ext/boost']
     conf.env.STLIBPATH_BOOST = ['ext/boost/stage/lib']
 
     for l in conf.env['BOOST_LIBS']:
@@ -65,6 +65,11 @@ class boost_build(Task):
 
 def build(bld):
 
+    bld.add_group('ext')
+    bld.add_group('project')
+
+    bld.set_group('ext')
+
     b0 = boost_decompress(env=bld.env)
     b0.set_inputs(bld.path.find_resource('boost.tar.gz'))
     b0.set_outputs(bld.path.find_or_declare('boost/bootstrap.sh'))
@@ -84,3 +89,5 @@ def build(bld):
     b2.set_inputs(bld.path.find_resource('boost/b2'))
     b2.set_outputs(outputs)
     bld.add_to_group(b2)
+
+    bld.set_group('project')
