@@ -1,6 +1,8 @@
 #! /usr/bin/env python2
 # encoding: utf-8
 
+import os,sys,re
+from subprocess import Popen, PIPE
 from distutils.spawn import find_executable as which
 
 top     = '.'
@@ -9,8 +11,6 @@ VERSION = '0.0.2'
 APPNAME = 'tpc_reader'
 
 def options(opt):
-
-    import os,sys
 
     opt.load('compiler_cxx') # boost
 
@@ -58,8 +58,6 @@ def options(opt):
 
 
 def configure(conf):
-    import os,re
-    from subprocess import Popen, PIPE
 
     conf.load('compiler_cxx')
 
