@@ -1,22 +1,6 @@
-from waflib.Task import Task
-from waflib.Build import BuildContext
-
-class RootDict(Task):
-    run_str = 'rootcint -f ${TGT[0].relpath()} -c ${SRC[0].abspath()} ${SRC[1].abspath()}'
-    color = 'BLUE'
-
-def rootdict(bld,**kwargs):
-    task = RootDict(env=bld.env, cwd=bld.path.get_bld())
-    task.set_inputs([bld.path.find_resource(s) for s in kwargs['source']])
-    task.set_outputs([bld.path.find_or_declare(t) for t in kwargs['target']])
-    bld.add_to_group(task)
-    return task
-
-BuildContext.rootdict = rootdict
-
 
 def build(bld):
-    bld.rootdict(
+    bld.root_dict(
         target = ['main_window_dict.cpp','main_window_dict.h'],
         source = ['main_window.hpp', 'main_window_linkdef.hpp'],
     )

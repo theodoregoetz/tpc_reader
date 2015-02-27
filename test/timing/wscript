@@ -1,18 +1,14 @@
-# encoding: utf-8
 
 def build(bld):
 
-    progs = ['tpc-readraw']
+    if bld.env['HAS_C++11']:
 
-    for p in progs:
         bld.program(
-            target = p,
-            source = [p+'.cpp'],
+            target = 'tpc-readraw-timing',
+            source = ['tpc-readraw-timing.cpp'],
             includes = ['#src'],
             use = '''\
+                C++11
                 BOOST
                     boost_filesystem
             ''')
-
-
-    bld.recurse('online_monitor')

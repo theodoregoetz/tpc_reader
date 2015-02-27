@@ -7,12 +7,12 @@ from distutils.spawn import find_executable as which
 
 top     = '.'
 out     = 'build'
-VERSION = '0.0.2'
+VERSION = '0.1.1'
 APPNAME = 'tpc_reader'
 
 def options(opt):
 
-    opt.load('compiler_cxx') # boost
+    opt.load('compiler_cxx')
 
     ### CONFIGURE options
     cfg_opts = opt.exec_dict['opt'].get_option_group('configure options')
@@ -44,17 +44,14 @@ def options(opt):
     ### BUILD options
     bld_opts = opt.exec_dict['opt'].get_option_group('build and install options')
 
+    bld_opts.add_option('--tests', dest='build_tests',
+        action='store_true', default=False,
+        help='Build unit tests and other testing programs. default: %default')
     bld_opts.add_option('--all', dest='build_all',
         action='store_true', default=False,
         help='Build everything including unit tests. default: %default')
-    bld_opts.add_option('--test', dest='build_test',
-        action='store_true', default=False,
-        help='Build unit tests. default: %default')
 
     opt.recurse('ext')
-    #opt.recurse('src')
-    #opt.recurse('tools')
-    #opt.recurse('test')
 
 
 def configure(conf):
@@ -190,84 +187,8 @@ Please consider upgrading your C++ compiler.
         msg          = 'Checking for pthread')
 
     conf.recurse('ext')
-    #conf.recurse('src')
-    #conf.recurse('tools')
-    conf.recurse('test')
 
     """
-    conf.load('boost')
-    conf.check_boost()
-
-    boost_required_libs = '''
-        program_options
-        filesystem
-        system
-        log
-        log_setup
-        date_time
-        chrono
-        thread
-    '''.split()
-
-    for libname in boost_required_libs:
-        libpath,lib = conf.boost_get_libs(libname)
-        if libpath not in system_libpath:
-            conf.env.append_unique('LIBPATH_BOOST',libpath)
-        conf.env.append_unique('LIB_boost_'+libname, lib)
-        conf.to_log('boost library found: {}'.format(libname))
-
-    conf.env.append_unique('LIB_boost_log',
-        ['boost_'+l for l in '''\
-            log_setup
-            filesystem
-            system
-            date_time
-            chrono
-            thread
-        '''.split()])
-    conf.env.append_unique('DEFINES', 'HAVE_BOOST_LOG')
-
-    conf.env.append_unique('LIB_boost_filesystem',['boost_system'])
-
-    conf.env.append_unique('DEFINES_BOOST', ['BOOST_LOG_DYN_LINK'])
-
-
-    conf.check_cfg(
-        uselib_store = 'MYSQL',
-        path         = 'mysql_config',
-        args         = ['--cflags', '--libs'],
-        package      = '' )
-
-    def remove_flags(conf, package_name, *list_of_flags):
-        flagtypes = 'CXXFLAGS CFLAGS LINKFLAGS'.split(' ')
-        cenvlist = []
-        for ft in flagtypes:
-            cenvlist += [conf.env[ft+'_'+package_name]]
-        for f in list_of_flags:
-            for cenv in cenvlist:
-                if f in cenv:
-                    cenv.remove(f)
-
-    remove_flags(conf, 'MYSQL', '-fstack-protector-strong')
-    """
-
-
-    ### OPTIONAL DEPENDENCIES
-
-    """
-    boost_optional_libs = '''
-        unit_test_framework
-    '''.split()
-    for libname in boost_optional_libs:
-        try:
-            libpath,lib = conf.boost_get_libs(libname)
-            if libpath not in system_libpath:
-                conf.env.append_unique('LIBPATH_BOOST',libpath)
-            conf.env.append_unique('LIB_boost_'+libname, lib)
-            conf.to_log('boost library found: {}'.format(libname))
-        except conf.errors.ConfigurationError:
-            conf.to_log('boost library not found: {}'.format(libname))
-
     try:
         conf.check_cxx(
             uselib_store = 'EXPAT',
@@ -281,21 +202,23 @@ Please consider upgrading your C++ compiler.
             args         = ['--cflags', '--libs'],
             mandatory    = False )
 
-    ### some configuration based on the options above
-    if not conf.options.debug:
-        conf.env.append_unique('DEFINES_BOOST', ['NDEBUG'])
-
     """
 
 
 def build(bld):
 
     if bld.options.build_all:
-        bld.options.build_test = True
+        build_tools = True
+        bld.options.build_tests = True
+    elif bld.options.build_tests:
+        build_tools = False
+    else:
+        build_tools = True
 
     bld.recurse('ext')
-    #bld.recurse('src')
-    bld.recurse('tools')
 
-    if bld.options.build_test:
+    if build_tools:
+        bld.recurse('tools')
+
+    if bld.options.build_tests:
         bld.recurse('test')

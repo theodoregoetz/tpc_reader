@@ -16,7 +16,7 @@ static const size_t nchannels = 68;
 // total number of raw data points per timing cell
 static const size_t frame_length = nasads * nagets * nchannels;
 
-// number of timing cells (buckets) in the ADC window
+// number of cells (timing buckets) in the ADC window
 static const size_t ncells = 512;
 
 // block size for data transfers
@@ -29,7 +29,7 @@ static const size_t frame_header_size = 2 * block_size;
 // number of rings of pads on the TPC
 static const size_t nrings = 32;
 
-// number of pads in each ring starting from the center
+// number of pads in each ring
 static const size_t npads[nrings] = {
      48,  48,  72,  96, 120, 144, 168, 192, 216, 240,
     208, 218, 230, 214, 212, 214, 220, 224, 232, 238,

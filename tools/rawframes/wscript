@@ -1,0 +1,31 @@
+
+def build(bld):
+
+    progs = '''
+        tcp-dump
+        tpc-readraw-minmax
+        tpc-readraw-frame
+        tpc-readraw-frame-tcp
+        tpc-readraw-frame-tcp-simple
+        tpc-readraw-frame-tcp-simple2
+    '''.split()
+
+    for p in progs:
+        bld.program(
+            target = p,
+            source = [p+'.cpp'],
+            includes = ['#src'],
+            use = '''\
+                BOOST
+                    boost_filesystem
+            ''')
+
+    bld.program(
+        target = 'tpc-readraw-framedisplay',
+        source = ['tpc-readraw-framedisplay.cpp'],
+        includes = ['#src'],
+        use = '''\
+            BOOST
+                boost_filesystem
+            ROOT
+        ''')

@@ -1,15 +1,14 @@
 
-def configure(conf):
-    pass
-
 def build(bld):
 
     bld.program(
         target = 'tpc-readraw-test',
-        source = bld.path.ant_glob('**/*.cpp'),
+        source = bld.path.ant_glob('tpc/**.cpp'),
         includes = ['#src','#test'],
         use = '''
             BOOST
                 boost_unit_test_framework
                 boost_filesystem
         ''')
+
+    bld.recurse('timing')
