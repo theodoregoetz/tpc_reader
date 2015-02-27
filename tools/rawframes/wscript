@@ -7,7 +7,6 @@ def build(bld):
         tpc-readraw-frame
         tpc-readraw-frame-tcp
         tpc-readraw-frame-tcp-simple
-        tpc-readraw-frame-tcp-simple2
     '''.split()
 
     for p in progs:

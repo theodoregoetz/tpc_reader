@@ -15,4 +15,5 @@ def build(bld):
             ''')
 
 
+    bld.recurse('rawframes')
     bld.recurse('online_monitor')

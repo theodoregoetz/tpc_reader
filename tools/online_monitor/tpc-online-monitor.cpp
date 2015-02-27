@@ -1,13 +1,3 @@
-/**
- * compile with:
-
-rootcint -f main_window_dict.cpp -c main_window.hpp main_window_linkdef.hpp
-
-g++ -o test tpc-readraw-framedisplay.cpp main_window.cpp main_window_dict.cpp `root-config --cflags --glibs`
-
- *
- **/
-
 #include "TApplication.h"
 #include "TGClient.h"
 
