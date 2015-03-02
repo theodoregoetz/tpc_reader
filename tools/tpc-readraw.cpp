@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     int count = 0;
     while (tpc_data.read(fin))
     {
-        const tpc::Data::ScalarDataPad& data = tpc_data.adc(0,0);
+        const tpc::Data::ScalarDataPad& data = tpc_data.adc(1,1);
         tpc::Data::ScalarDataPad::const_iterator x;
         for (x = data.begin(); x != data.end(); ++x)
         {

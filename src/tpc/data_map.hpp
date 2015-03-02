@@ -16,6 +16,7 @@
 namespace tpc
 {
 
+using std::clog;
 using std::cerr;
 using std::endl;
 using std::ios;
@@ -68,8 +69,8 @@ class DataMap
         {
             if (! fs::exists(filepath))
             {
-                string err = "TPC map file (" + filepath.string() \
-                           + ") does not exist\n";
+                string err = "TPC map file " + filepath.string() \
+                           + " does not exist\n";
                 throw system_error(err);
             }
             fs::ifstream fin(filepath);

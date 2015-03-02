@@ -15,6 +15,7 @@
 namespace tpc
 {
 
+using std::clog;
 using std::cerr;
 using std::endl;
 using std::vector;
@@ -60,6 +61,7 @@ class DataFrameHeader
             string err = "Exception reading raw TPC data frame header.";
             throw runtime_error(err);
         }
+        clog << "error reading frame header.\n";
         return false;
     }
 
@@ -124,7 +126,7 @@ class DataFrameBuffer : public vector<uint32_t>
 
     bool read_header(istream& is)
     {
-        _header.read(is);
+        return _header.read(is);
     }
 
     bool read_data(istream& is)
@@ -143,6 +145,7 @@ class DataFrameBuffer : public vector<uint32_t>
             string err = "Exception reading raw TPC buffer.";
             throw runtime_error(err);
         }
+        clog << "error reading frame data.\n";
         return false;
     }
 
@@ -204,10 +207,10 @@ class DataFrame : public vector<DataFrameElement>
                 for (x = _buffer.begin(); x != _buffer.end(); ++x)
                 {
                     elem->id.asad    = asad;
-                    elem->id.aget    = *x >> 30 & 0x3;
-                    elem->id.channel = *x >> 23 & 0x7f;
-                    elem->cell       = *x >> 14 & 0x1ff;
-                    elem->val        = *x & 0xfff;
+                    elem->id.aget    = (*x >> 30) & 0x3;
+                    elem->id.channel = (*x >> 23) & 0x7f;
+                    elem->cell       = (*x >> 14) & 0x1ff;
+                    elem->val        = (*x) & 0xfff;
                     elem->cell = (elem->cell - this->header().last_cell(elem->id.aget) - 1 + ncells) % ncells;
                     if (elem->id.asad < nasads &&
                         elem->id.aget < nagets &&
@@ -215,6 +218,10 @@ class DataFrame : public vector<DataFrameElement>
                         elem->cell < ncells)
                     {
                         ++elem;
+                    }
+                    else
+                    {
+                        break;
                     }
                 }
                 this->erase(elem,this->end());
@@ -226,6 +233,7 @@ class DataFrame : public vector<DataFrameElement>
             string err = "Exception reading raw TPC data.";
             throw runtime_error(err);
         }
+        clog << "error reading frame.\n";
         return false;
     }
 

@@ -12,6 +12,7 @@ int main(int argc, char** argv)
     string mapfile = argv[1];
     string infile = argv[2];
 
+    cout << "reading in mapfile.\n";
     tpc::DataMap mp;
     mp.load(mapfile);
 
@@ -23,8 +24,10 @@ int main(int argc, char** argv)
     }
     tpc::DataFrame fr;
 
+    cout << "reading in data.\n";
     while (fr.read(fin))
     {
+        cout << "got a frame.\n";
         const tpc::DataFrameHeader& hd = fr.header();
 
         cout << "meta type: " << hd.meta_type() << endl;

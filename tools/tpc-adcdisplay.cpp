@@ -6,8 +6,7 @@
 #include "TROOT.h"
 #include "TApplication.h"
 #include "TCanvas.h"
-#include "TH2.h"
-#include "TGraph.h"
+#include "TH1.h"
 
 #include "tpc/data.hpp"
 
@@ -32,26 +31,20 @@ int main(int argc, char** argv)
     TApplication theApp("theApp", &argc, argv);
 
     TCanvas can("can");
-    TH2I hist("hist","hist",
-        tpc::nrings, -0.5, float(tpc::nrings) - 0.5,
-        npads_max,   -0.5, float(npads_max)   - 0.5);
-    hist.Draw("colz");
+    TH1I hist("hist","hist",
+        tpc::ncells, -0.5, float(tpc::ncells) - 0.5);
+    hist.Draw();
 
     clog << "Hit enter to continue to next frame.\n";
     while (tpc_data.read(fin))
     {
+        const vector<int>& adc = tpc_data.adc(1,11);
         for (int cell = 0; cell < tpc::ncells; cell++)
         {
-            for (size_t ring=0; ring<tpc::nrings; ring++)
-            {
-                for (size_t pad=0; pad<tpc::npads[ring]; pad++)
-                {
-                    hist.SetBinContent(ring,pad,tpc_data.adc(ring,pad)[cell]);
-                }
-            }
-            can.Update();
-            can.WaitPrimitive();
+            hist.SetBinContent(cell,double(adc[cell]));
         }
+        can.Update();
+        can.WaitPrimitive();
         tpc_data.clear();
     }
     theApp.Run(true);

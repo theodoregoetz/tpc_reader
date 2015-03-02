@@ -3,6 +3,9 @@
 build
 *.graw
 
+# use leading _ to hide files and directories from git
+_*
+
 # Compiled Object files
 *.slo
 *.lo
