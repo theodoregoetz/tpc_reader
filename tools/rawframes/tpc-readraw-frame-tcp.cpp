@@ -2,16 +2,11 @@
 #include <iostream>
 #include <string>
 
-#include <boost/asio.hpp>
-
 #include "tpc/data_frame.hpp"
 #include "tpc/data_map.hpp"
+#include "tpc/data_streambuf.hpp"
 
 using namespace std;
-
-namespace asio = boost::asio;
-using boost::asio::ip::tcp;
-typedef asio::streambuf::mutable_buffers_type mutable_buffer;
 
 void operator<<(ostream& os, const tpc::DataFrame& fr)
 {
@@ -53,51 +48,60 @@ void operator<<(ostream& os, const tpc::DataFrame& fr)
 
 int main(int argc, char** argv)
 {
+    if (argc < 2)
+    {
+        cout << "Error: Missing TPC map file\n\n";
+        cout << "usage: " << argv[0] << " path/to/tpc_map.txt\n";
+        cout << endl;
+        return 1;
+    }
     string mapfile = argv[1];
 
     tpc::DataMap mp;
     mp.load(mapfile);
 
-    static const size_t buffer_max = 262144; // 2**18
+    istream* is;
+
+    if (argc < 3)
+    {
+        is = new istream(new tpc::DataTcpStreamBuf());
+    }
+    else if (argc < 4)
+    {
+        if (string(argv[2]) == string("stdin"))
+        {
+            is = new istream(cin.rdbuf());
+        }
+        else
+        {
+            is = new ifstream(argv[2],ios::binary);
+        }
+    }
 
     try
     {
-        asio::io_service io_service;
-        tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 46005));
-
-        asio::streambuf sbuf;
-        istream is(&sbuf);
-
-        tcp::socket socket(io_service);
-        acceptor.accept(socket);
-
         tpc::DataFrame fr;
         bool have_header = false;
         bool have_data = false;
-        size_t data_size;
-        size_t nbytes_received;
-        while (true)
+        while (is->good() && !is->eof())
         {
-            mutable_buffer mbuf = sbuf.prepare(buffer_max);
-            nbytes_received = socket.receive(mbuf);
-            sbuf.commit(nbytes_received);
-
-            if (have_header)
+            if (!have_header)
             {
-                if (sbuf.size() >= data_size)
+                if (!fr.read_header(*is))
                 {
-                    fr.read_data(is);
-                    have_data = true;
+                    // error reading header
+                    break;
                 }
+                have_header = true;
             }
             else
             {
-                if (sbuf.size() >= tpc::frame_header_size)
+                if (!fr.read_data(*is))
                 {
-                    fr.read_header(is);
-                    data_size = fr.header().data_size();
-                    have_header = true;
+                    // error reading data
+                    break;
                 }
+                have_data = true;
             }
 
             if (have_data && have_header)
@@ -105,6 +109,7 @@ int main(int argc, char** argv)
                 cout << fr;
                 have_header = false;
                 have_data = false;
+                cin.ignore();
             }
         }
     }

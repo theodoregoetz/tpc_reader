@@ -65,6 +65,11 @@ class DataMap
 
     void load(const fs::path& filepath)
     {
+        if (filepath.empty())
+        {
+            string err = "You must specify a TPC map file\n";
+            throw system_error(err);
+        }
         try
         {
             if (! fs::exists(filepath))

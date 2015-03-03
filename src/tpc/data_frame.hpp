@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
 #include <stdexcept>
 
 #include "config.hpp"
@@ -19,11 +20,11 @@ using std::clog;
 using std::cerr;
 using std::endl;
 using std::vector;
+using std::map;
 using std::string;
 using std::istream;
 using std::exception;
 using std::runtime_error;
-
 
 class DataFrameHeader
 {
@@ -134,7 +135,7 @@ class DataFrameBuffer : public vector<uint32_t>
         try
         {
             size_t frame_data_size = _header.data_size();
-            size_t frame_data_words = frame_data_size / sizeof(uint32_t);
+            size_t frame_data_words = frame_data_size/sizeof(uint32_t);
             this->resize(frame_data_words);
             is.read((char*)this->data(), frame_data_size);
             _bswap();
@@ -198,9 +199,13 @@ class DataFrame : public vector<DataFrameElement>
         {
             if (_buffer.read_data(is))
             {
-                int asad    = _buffer.header().asad_index();
+                const DataFrameHeader& hdr = _buffer.header();
 
-                this->resize(_buffer.header().frame_size() / sizeof(uint32_t));
+                int asad    = hdr.asad_index();
+
+                this->resize(hdr.frame_size() / sizeof(uint32_t));
+
+                map<int,int> cell_shift;
 
                 DataFrame::iterator elem = this->begin();
                 DataFrameBuffer::const_iterator x;
@@ -211,7 +216,18 @@ class DataFrame : public vector<DataFrameElement>
                     elem->id.channel = (*x >> 23) & 0x7f;
                     elem->cell       = (*x >> 14) & 0x1ff;
                     elem->val        = (*x) & 0xfff;
-                    elem->cell = (elem->cell - this->header().last_cell(elem->id.aget) - 1 + ncells) % ncells;
+
+                    if (! cell_shift.count(elem->id.aget))
+                    {
+                        cell_shift[elem->id.aget] = \
+                            - hdr.last_cell(elem->id.aget)
+                            - 1
+                            + ncells;
+                    }
+
+                    elem->cell += cell_shift[elem->id.aget];
+                    elem->cell %= ncells;
+
                     if (elem->id.asad < nasads &&
                         elem->id.aget < nagets &&
                         elem->id.channel < nchannels &&

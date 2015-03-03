@@ -7,6 +7,8 @@ def build(bld):
         tpc-readraw-frame
         tpc-readraw-frame-tcp
         tpc-readraw-frame-tcp-simple
+        tpc-framerouter
+        testtcp
     '''.split()
 
     for p in progs:
