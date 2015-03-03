@@ -109,7 +109,6 @@ int main(int argc, char** argv)
                 cout << fr;
                 have_header = false;
                 have_data = false;
-                cin.ignore();
             }
         }
     }
